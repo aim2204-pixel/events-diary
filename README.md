@@ -28,4 +28,11 @@
 - LocalStorage для хранения данных
 - Service Worker для офлайн-работы
 
-## 📁 Структура проекта
+## 🔧 Для разработчиков
+PWA Builder (для создания APK): [https://www.pwabuilder.com/](https://www.pwabuilder.com/)
+
+📝 Лицензия
+© 2025 Шахов Иван Иванович. Все права защищены.
+
+📬 Контакты
+По вопросам и предложениям: workout-diary22@mail.ru
