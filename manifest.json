@@ -1,0 +1,81 @@
+{
+  "name": "Мой Дневник Мероприятий",
+  "short_name": "Мероприятия",
+  "description": "Планируйте мероприятия, ставьте задачи, отслеживайте прогресс с удобным календарем",
+  "start_url": "/events-diary/",
+  "scope": "/events-diary/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#9d4edd",
+  "orientation": "portrait",
+  "categories": ["productivity", "lifestyle", "utilities"],
+  "lang": "ru",
+  "dir": "ltr",
+  "icons": [
+    {
+      "purpose": "maskable any",
+      "sizes": "48x48",
+      "src": "/events-diary/maskable_icon_x48.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable any",
+      "sizes": "72x72",
+      "src": "/events-diary/maskable_icon_x72.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable any",
+      "sizes": "96x96",
+      "src": "/events-diary/maskable_icon_x96.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable any",
+      "sizes": "128x128",
+      "src": "/events-diary/maskable_icon_x128.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable any",
+      "sizes": "192x192",
+      "src": "/events-diary/maskable_icon_x192.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable any",
+      "sizes": "384x384",
+      "src": "/events-diary/maskable_icon_x384.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable any",
+      "sizes": "512x512",
+      "src": "/events-diary/maskable_icon_x512.png",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/events-diary/screenshot-mobile-1.jpg",
+      "sizes": "1440x3010",
+      "type": "image/jpg",
+      "form_factor": "narrow",
+      "label": "Главный экран со списком мероприятий"
+    },
+    {
+      "src": "/events-diary/screenshot-mobile.png",
+      "sizes": "1440x3010",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Календарь мероприятий"
+    },
+    {
+      "src": "/events-diary/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Полный интерфейс на компьютере"
+    }
+  ]
+}
