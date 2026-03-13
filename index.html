@@ -28,10 +28,12 @@
             --color-danger: #ff6b6b;
             --color-accent: #ffd166;
             --color-info: #90e0ef;
+            --color-archived: #718096;
             
             --bg-body: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             --bg-header: rgba(0, 30, 60, 0.95);
             --bg-card: rgba(255, 255, 255, 0.08);
+            --bg-card-archived: rgba(113, 128, 150, 0.15);
             --bg-input: rgba(0, 30, 60, 0.4);
             --bg-nav: rgba(0, 20, 40, 0.98);
             --bg-overlay: rgba(0, 0, 0, 0.85);
@@ -39,6 +41,7 @@
             --text-primary: #f0f0f0;
             --text-secondary: #90e0ef;
             --text-muted: #aaa;
+            --text-archived: #a0aec0;
             --text-inverse: #fff;
             
             --border-color: rgba(255, 255, 255, 0.1);
@@ -61,10 +64,12 @@
             --color-danger: #c97a7a;
             --color-accent: #d4b483;
             --color-info: #7a9eb1;
+            --color-archived: #a0aec0;
             
             --bg-body: #f5f1eb;
             --bg-header: rgba(245, 241, 235, 0.95);
             --bg-card: rgba(255, 253, 250, 0.95);
+            --bg-card-archived: rgba(160, 174, 192, 0.15);
             --bg-input: rgba(255, 255, 255, 0.15);
             --bg-nav: rgba(250, 247, 242, 0.98);
             --bg-overlay: rgba(0, 0, 0, 0.1);
@@ -72,6 +77,7 @@
             --text-primary: #5a5349;
             --text-secondary: #7a7368;
             --text-muted: #9c968d;
+            --text-archived: #718096;
             --text-inverse: #ffffff;
             
             --border-color: rgba(139, 115, 85, 0.15);
@@ -92,10 +98,12 @@
             --color-danger: #e76f51;
             --color-accent: #f4a261;
             --color-info: #264653;
+            --color-archived: #718096;
             
             --bg-body: #121212;
             --bg-header: rgba(30, 30, 30, 0.95);
             --bg-card: rgba(40, 40, 40, 0.8);
+            --bg-card-archived: rgba(113, 128, 150, 0.2);
             --bg-input: rgba(60, 60, 60, 0.6);
             --bg-nav: rgba(25, 25, 25, 0.98);
             --bg-overlay: rgba(0, 0, 0, 0.8);
@@ -103,6 +111,7 @@
             --text-primary: #f5f5f5;
             --text-secondary: #d4af37;
             --text-muted: #888888;
+            --text-archived: #a0aec0;
             --text-inverse: #FFFEFE;
             
             --border-color: rgba(212, 175, 55, 0.2);
@@ -176,6 +185,18 @@
             transform: scale(1.05);
         }
         
+        .header-archive-badge {
+            position: absolute;
+            top: 8px;
+            right: 15px;
+            background: var(--color-archived);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
         .content-area {
             padding: 12px;
             max-width: 800px;
@@ -226,7 +247,7 @@
             border-color: var(--color-primary);
         }
         
-        /* ==================== ПОИСК (ТОЛЬКО НА ГЛАВНОЙ) ==================== */
+        /* ==================== ПОИСК ==================== */
         .search-container {
             padding: 0 0 12px 0;
             position: relative;
@@ -273,6 +294,21 @@
             border-left: 5px solid var(--color-primary);
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
             position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .event-card.archived {
+            background: var(--bg-card-archived);
+            border-left-color: var(--color-archived);
+            opacity: 0.9;
+        }
+        
+        .event-card.archived .event-title {
+            color: var(--text-archived);
+        }
+        
+        .event-card.archived .task-text.completed {
+            opacity: 0.8;
         }
         
         .event-header {
@@ -313,6 +349,15 @@
             background: rgba(255,255,255,0.1);
         }
         
+        .event-archived-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            background: var(--color-archived);
+            color: white;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+        
         .event-actions {
             position: absolute;
             top: 14px;
@@ -321,7 +366,7 @@
             gap: 8px;
         }
         
-        .event-copy-btn, .event-edit-btn, .event-delete-btn {
+        .event-copy-btn, .event-edit-btn, .event-delete-btn, .event-restore-btn {
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.7);
             border: none;
@@ -351,6 +396,16 @@
             color: white;
         }
         
+        .event-restore-btn {
+            background: rgba(72, 187, 120, 0.2);
+            color: var(--color-success);
+        }
+        
+        .event-restore-btn:hover {
+            background: var(--color-success);
+            color: white;
+        }
+        
         /* ==================== ЗАДАЧИ И ПОДЗАДАЧИ ==================== */
         .tasks-block {
             margin: 10px 0 6px 0;
@@ -365,9 +420,11 @@
         }
         
         .task-main-row {
-            display: flex;
-            align-items: center;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
             gap: 10px;
+            align-items: center;
+            width: 100%;
         }
         
         .task-checkbox {
@@ -379,9 +436,11 @@
         }
         
         .task-text {
-            flex: 1;
             font-size: 0.95rem;
             color: var(--text-primary);
+            word-break: break-word;
+            white-space: normal;
+            line-height: 1.4;
         }
         
         .task-text.completed {
@@ -397,6 +456,7 @@
             padding: 4px 8px;
             font-size: 0.9rem;
             transition: var(--transition);
+            flex-shrink: 0;
         }
         
         .task-note-btn:hover {
@@ -418,6 +478,7 @@
             color: var(--text-secondary);
             border-left: 3px solid var(--color-accent);
             display: none;
+            word-break: break-word;
         }
         
         .task-note-display.visible {
@@ -432,9 +493,10 @@
         }
         
         .subtask-item {
-            display: flex;
-            align-items: center;
+            display: grid;
+            grid-template-columns: auto 1fr;
             gap: 10px;
+            align-items: center;
             padding: 6px 0;
         }
         
@@ -443,12 +505,14 @@
             height: 16px;
             cursor: pointer;
             accent-color: var(--color-success);
+            flex-shrink: 0;
         }
         
         .subtask-text {
-            flex: 1;
             font-size: 0.9rem;
             color: var(--text-primary);
+            word-break: break-word;
+            white-space: normal;
         }
         
         .subtask-text.completed {
@@ -770,6 +834,7 @@
             background: rgba(255, 255, 255, 0.15);
         }
         
+        /* ==================== ФОРМА ЗАДАЧ ==================== */
         .task-form-item {
             background: rgba(255,255,255,0.03);
             border-radius: 10px;
@@ -779,23 +844,54 @@
         }
         
         .task-form-header {
-            display: flex;
-            gap: 15px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 12px;
             align-items: flex-start;
             margin-bottom: 10px;
+            width: 100%;
         }
         
         .task-form-checkbox {
             margin-top: 12px;
+            width: 24px;
+            flex-shrink: 0;
+        }
+        
+        .task-form-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--color-success);
         }
         
         .task-form-input {
-            flex: 1;
+            width: 100%;
+            min-width: 0;
+        }
+        
+        .task-form-input input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+        
+        .task-form-input input:focus {
+            outline: none;
+            border-color: var(--color-secondary);
+            background: rgba(255, 255, 255, 0.15);
         }
         
         .task-form-actions {
             display: flex;
             gap: 5px;
+            flex-shrink: 0;
         }
         
         .task-note-field {
@@ -820,6 +916,7 @@
             font-size: 0.9rem;
             resize: vertical;
             min-height: 60px;
+            box-sizing: border-box;
         }
         
         .subtask-form-item {
@@ -836,10 +933,23 @@
         .subtask-form-checkbox {
             width: 16px;
             height: 16px;
+            flex-shrink: 0;
         }
         
         .subtask-form-input {
             flex: 1;
+            min-width: 0;
+        }
+        
+        .subtask-form-input input {
+            width: 100%;
+            padding: 6px 10px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            box-sizing: border-box;
         }
         
         .btn-add-subtask-form {
@@ -874,6 +984,7 @@
             background: rgba(var(--color-danger-rgb, 220, 53, 69), 0.2);
             color: var(--color-danger);
             border-color: rgba(var(--color-danger-rgb, 220, 53, 69), 0.4);
+            flex-shrink: 0;
         }
         
         .btn-remove-task:hover {
@@ -1163,27 +1274,37 @@
             border-color: var(--color-primary);
         }
         
-        /* ==================== РЕЗЕРВ ==================== */
-        .reserve-card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 50px 20px;
-            margin-top: 15px;
-            box-shadow: var(--shadow-md);
-            border-left: 5px solid var(--color-primary);
-            text-align: center;
+        /* ==================== АРХИВ ==================== */
+        .archive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
         
-        .reserve-card i {
-            font-size: 4rem;
-            color: var(--text-muted);
-            opacity: 0.3;
-            margin-bottom: 20px;
+        .archive-count {
+            background: var(--color-archived);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
         
-        .reserve-card h2 {
-            color: var(--text-muted);
-            margin-bottom: 10px;
+        .archive-clear-btn {
+            background: transparent;
+            border: 1px solid var(--color-danger);
+            color: var(--color-danger);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .archive-clear-btn:hover {
+            background: var(--color-danger);
+            color: white;
         }
         
         /* ==================== НИЖНЕЕ МЕНЮ ==================== */
@@ -1213,6 +1334,7 @@
             flex: 1;
             max-width: 90px;
             cursor: pointer;
+            position: relative;
         }
         
         .nav-item.active {
@@ -1227,6 +1349,18 @@
         
         .nav-item span {
             font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            top: 0;
+            right: 5px;
+            background: var(--color-archived);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
             font-weight: 600;
         }
         
@@ -1316,11 +1450,32 @@
             }
             
             .task-form-header {
-                flex-direction: column;
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .task-form-checkbox {
+                margin-top: 0;
+                margin-bottom: 4px;
             }
             
             .task-form-actions {
-                align-self: flex-end;
+                justify-content: flex-end;
+                margin-top: 4px;
+            }
+            
+            .task-main-row {
+                grid-template-columns: auto 1fr;
+                gap: 8px;
+            }
+            
+            .task-note-btn {
+                grid-column: span 2;
+                justify-self: flex-end;
+            }
+            
+            .subtask-item {
+                grid-template-columns: auto 1fr;
             }
             
             .event-header {
@@ -1396,22 +1551,20 @@
             <div class="subtitle" id="pageSubtitle">Планируй. Организуй. Выполняй.</div>
         </div>
         <button class="header-add-btn" id="globalAddBtn" title="Добавить новое мероприятие">+</button>
+        <span class="header-archive-badge" id="archiveBadge" style="display: none;">0</span>
     </header>
     
     <!-- ОСНОВНОЙ КОНТЕНТ -->
     <main class="content-area">
-        <!-- ВКЛАДКА СПИСКА МЕРОПРИЯТИЙ (С ПОИСКОМ) -->
+        <!-- ВКЛАДКА СПИСКА МЕРОПРИЯТИЙ -->
         <section id="eventsSection">
-            <!-- ПОИСК ТОЛЬКО ЗДЕСЬ -->
             <div class="search-container">
                 <input type="text" class="search-input" id="searchInput" placeholder="Поиск мероприятий и задач...">
                 <i class="fas fa-search search-icon"></i>
             </div>
             
-            <!-- Фильтры по категориям -->
             <div class="categories-filter" id="categoriesFilter"></div>
             
-            <!-- Список мероприятий -->
             <div class="events-list" id="eventsListContainer">
                 <div class="empty-state" id="eventsEmptyState">
                     <i class="fas fa-calendar-check"></i>
@@ -1421,7 +1574,7 @@
             </div>
         </section>
 
-        <!-- ВКЛАДКА КАЛЕНДАРЯ (БЕЗ ПОИСКА) -->
+        <!-- ВКЛАДКА КАЛЕНДАРЯ -->
         <section id="calendarSection" style="display: none;">
             <div class="calendar-card">
                 <div class="calendar-header">
@@ -1444,9 +1597,30 @@
             </div>
         </section>
 
+        <!-- ВКЛАДКА АРХИВ -->
+        <section id="archiveSection" style="display: none;">
+            <div class="archive-header">
+                <h2 style="color: var(--text-secondary);"><i class="fas fa-archive"></i> Архив</h2>
+                <span class="archive-count" id="archiveCount">0</span>
+            </div>
+            
+            <div class="categories-filter" id="archiveCategoriesFilter"></div>
+            
+            <div class="events-list" id="archiveListContainer">
+                <div class="empty-state" id="archiveEmptyState">
+                    <i class="fas fa-box-open"></i>
+                    <h3>Архив пуст</h3>
+                    <p>Выполненные мероприятия будут автоматически перемещаться сюда</p>
+                </div>
+            </div>
+            
+            <button class="archive-clear-btn" id="clearArchiveBtn" style="margin-top: 15px; width: 100%;">
+                <i class="fas fa-trash-alt"></i> Очистить архив
+            </button>
+        </section>
+
         <!-- ВКЛАДКА ПРОФИЛЯ -->
         <section id="profileSection" style="display: none;">
-            <!-- БЛОК ПЕРЕКЛЮЧАТЕЛЯ ТЕМ -->
             <div class="theme-selector-card">
                 <h2><i class="fas fa-palette"></i>Выбор темы оформления:</h2>
                 <div class="theme-buttons-container">
@@ -1462,7 +1636,6 @@
                 </div>
             </div>
 
-            <!-- БЛОК ЛИЧНЫХ ДАННЫХ -->
             <div class="profile-card">
                 <h2><i class="fas fa-user-circle"></i> Профиль</h2>
                 <form class="profile-form" id="profileForm">
@@ -1478,7 +1651,6 @@
                 </form>
             </div>
             
-            <!-- БЛОК УПРАВЛЕНИЯ КАТЕГОРИЯМИ -->
             <div class="profile-card">
                 <h2><i class="fas fa-tags"></i> Управление категориями</h2>
                 <div class="categories-manager" id="categoriesManager"></div>
@@ -1487,7 +1659,6 @@
                 </button>
             </div>
             
-            <!-- БЛОК ЭКСПОРТА/ИМПОРТА -->
             <div class="profile-card">
                 <h2><i class="fas fa-database"></i> Управление данными</h2>
                 <div class="data-actions">
@@ -1501,32 +1672,22 @@
                 <input type="file" id="importFileInput" accept=".json" style="display: none;">
             </div>
             
-            <!-- БЛОК СТАТИСТИКИ -->
             <div class="profile-card">
                 <h2><i class="fas fa-chart-simple"></i> Статистика</h2>
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-value" id="statTotalEvents">0</div>
-                        <div class="stat-label">Мероприятий</div>
+                        <div class="stat-label">Активных</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statArchivedEvents">0</div>
+                        <div class="stat-label">В архиве</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="statCompletedTasks">0</div>
                         <div class="stat-label">Выполнено</div>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statTotalTasks">0</div>
-                        <div class="stat-label">Всего задач</div>
-                    </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- ВКЛАДКА РЕЗЕРВ -->
-        <section id="reserveSection" style="display: none;">
-            <div class="reserve-card">
-                <i class="fas fa-puzzle-piece"></i>
-                <h2>Резервная вкладка</h2>
-                <p style="color: var(--text-muted);">Здесь появится новый функционал в будущих версиях</p>
             </div>
         </section>
     </main>
@@ -1554,7 +1715,7 @@
                         <div class="form-group">
                             <label for="eventDate">Дата *</label>
                             <input type="text" id="eventDate" placeholder="ДД.ММ.ГГГГ" required>
-                            <div class="hint" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Формат: день.месяц.год</div>
+                            <div class="hint">Формат: день.месяц.год</div>
                         </div>
                         <div class="form-group">
                             <label for="eventCategory">Категория *</label>
@@ -1575,7 +1736,7 @@
                     <h3><i class="fas fa-sticky-note"></i> Примечания</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="eventNotes">Общие примечания к мероприятию</label>
+                            <label for="eventNotes">Общие примечания</label>
                             <textarea id="eventNotes" rows="3" placeholder="Дополнительная информация..."></textarea>
                         </div>
                     </div>
@@ -1608,17 +1769,15 @@
                 <div class="import-option">
                     <input type="radio" id="importOptionFull" name="importOption" value="full" checked>
                     <label for="importOptionFull">Полный импорт (заменить все данные)</label>
-                    <div class="hint">Заменяет все текущие данные на импортируемые.</div>
                 </div>
                 
                 <div class="import-option">
                     <input type="radio" id="importOptionMerge" name="importOption" value="merge">
                     <label for="importOptionMerge">Объединить (добавить новые)</label>
-                    <div class="hint">Добавит новые мероприятия, сохранив существующие.</div>
                 </div>
             </div>
             
-            <div class="form-actions" style="margin-top: 30px;">
+            <div class="form-actions">
                 <button type="button" class="btn-cancel" id="cancelImportBtn">Отмена</button>
                 <button type="button" class="btn-submit" id="confirmImportBtn">Подтвердить импорт</button>
             </div>
@@ -1632,9 +1791,7 @@
                 <h2 id="modalDateTitle">15 мая 2024</h2>
                 <button class="btn-close-form" id="closeDateModal">&times;</button>
             </div>
-            <div class="date-modal-events" id="dateModalEvents">
-                <!-- События будут добавляться сюда -->
-            </div>
+            <div class="date-modal-events" id="dateModalEvents"></div>
         </div>
     </div>
 
@@ -1642,15 +1799,17 @@
     <nav class="bottom-nav">
         <div class="nav-item active" data-target="eventsSection">
             <i class="fas fa-list-ul"></i><span>Список</span>
+            <span class="nav-badge" id="navActiveBadge" style="display: none;">0</span>
         </div>
         <div class="nav-item" data-target="calendarSection">
             <i class="fas fa-calendar-alt"></i><span>Календарь</span>
         </div>
+        <div class="nav-item" data-target="archiveSection">
+            <i class="fas fa-archive"></i><span>Архив</span>
+            <span class="nav-badge" id="navArchiveBadge" style="display: none;">0</span>
+        </div>
         <div class="nav-item" data-target="profileSection">
             <i class="fas fa-user-circle"></i><span>Профиль</span>
-        </div>
-        <div class="nav-item" data-target="reserveSection">
-            <i class="fas fa-puzzle-piece"></i><span>Резерв</span>
         </div>
     </nav>
 
@@ -1662,6 +1821,7 @@
         const STORAGE_KEYS = {
             PROFILE: 'eventsDiary_userProfile',
             EVENTS: 'eventsDiary_eventsLog',
+            ARCHIVE: 'eventsDiary_archiveLog',
             CATEGORIES: 'eventsDiary_categories',
             ACTIVE_TAB: 'eventsDiary_activeTab',
             THEME: 'eventsDiary_theme'
@@ -1670,6 +1830,7 @@
         // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
         let categories = [];
         let currentFilterCategory = 'all';
+        let currentArchiveFilterCategory = 'all';
         let searchTimeout = null;
         let currentCalendarDate = new Date();
         
@@ -1739,36 +1900,14 @@
                 categories = initDefaultCategories();
             }
             
-            migrateEventsToCategoryIds();
             renderCategoriesFilter();
+            renderArchiveCategoriesFilter();
             renderCategoriesManager();
             populateCategorySelect();
         }
         
         function saveCategories() {
             localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
-        }
-        
-        function migrateEventsToCategoryIds() {
-            const events = loadEvents();
-            let needsSave = false;
-            
-            events.forEach(event => {
-                if (event.category && !event.categoryId) {
-                    const category = categories.find(c => c.name === event.category);
-                    if (category) {
-                        event.categoryId = category.id;
-                    } else {
-                        event.categoryId = 'cat_other';
-                    }
-                    delete event.category;
-                    needsSave = true;
-                }
-            });
-            
-            if (needsSave) {
-                saveEvents(events);
-            }
         }
         
         function getCategoryById(categoryId) {
@@ -1786,7 +1925,7 @@
             allChip.dataset.categoryId = 'all';
             allChip.textContent = 'Все';
             allChip.addEventListener('click', () => {
-                document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('#categoriesFilter .category-chip').forEach(c => c.classList.remove('active'));
                 allChip.classList.add('active');
                 currentFilterCategory = 'all';
                 renderEventsList();
@@ -1800,10 +1939,44 @@
                 chip.textContent = cat.name;
                 chip.style.borderLeftColor = `var(${cat.color})`;
                 chip.addEventListener('click', () => {
-                    document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('#categoriesFilter .category-chip').forEach(c => c.classList.remove('active'));
                     chip.classList.add('active');
                     currentFilterCategory = cat.id;
                     renderEventsList();
+                });
+                container.appendChild(chip);
+            });
+        }
+        
+        function renderArchiveCategoriesFilter() {
+            const container = document.getElementById('archiveCategoriesFilter');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            const allChip = document.createElement('div');
+            allChip.className = `category-chip ${currentArchiveFilterCategory === 'all' ? 'active' : ''}`;
+            allChip.dataset.categoryId = 'all';
+            allChip.textContent = 'Все';
+            allChip.addEventListener('click', () => {
+                document.querySelectorAll('#archiveCategoriesFilter .category-chip').forEach(c => c.classList.remove('active'));
+                allChip.classList.add('active');
+                currentArchiveFilterCategory = 'all';
+                renderArchiveList();
+            });
+            container.appendChild(allChip);
+            
+            categories.forEach(cat => {
+                const chip = document.createElement('div');
+                chip.className = `category-chip ${currentArchiveFilterCategory === cat.id ? 'active' : ''}`;
+                chip.dataset.categoryId = cat.id;
+                chip.textContent = cat.name;
+                chip.style.borderLeftColor = `var(${cat.color})`;
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('#archiveCategoriesFilter .category-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    currentArchiveFilterCategory = cat.id;
+                    renderArchiveList();
                 });
                 container.appendChild(chip);
             });
@@ -1873,11 +2046,16 @@
                             saveCategories();
                             
                             renderCategoriesFilter();
+                            renderArchiveCategoriesFilter();
                             populateCategorySelect();
                             renderCategoriesManager();
                             
                             if (document.getElementById('eventsSection').style.display !== 'none') {
                                 renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+                            }
+                            
+                            if (document.getElementById('archiveSection').style.display !== 'none') {
+                                renderArchiveList();
                             }
                             
                             if (document.getElementById('calendarSection').style.display !== 'none') {
@@ -1935,6 +2113,7 @@
             
             saveCategories();
             renderCategoriesFilter();
+            renderArchiveCategoriesFilter();
             renderCategoriesManager();
             populateCategorySelect();
             showNotification('Категория добавлена');
@@ -1974,6 +2153,142 @@
             }
         }
         
+        function loadArchive() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS.ARCHIVE);
+                return saved ? JSON.parse(saved) : [];
+            } catch (error) {
+                console.error('Ошибка загрузки архива:', error);
+                return [];
+            }
+        }
+        
+        function saveArchive(archive) {
+            try {
+                localStorage.setItem(STORAGE_KEYS.ARCHIVE, JSON.stringify(archive));
+                updateBadges();
+                updateStatistics();
+            } catch (error) {
+                console.error('Ошибка сохранения архива:', error);
+            }
+        }
+        
+        function moveToArchiveIfCompleted(event) {
+            if (!event.tasks || event.tasks.length === 0) return false;
+            
+            // Проверяем, все ли задачи и подзадачи выполнены
+            const allTasksCompleted = event.tasks.every(task => {
+                if (!task.completed) return false;
+                
+                // Проверяем подзадачи, если есть
+                if (task.subtasks && task.subtasks.length > 0) {
+                    return task.subtasks.every(sub => sub.completed);
+                }
+                
+                return true;
+            });
+            
+            return allTasksCompleted;
+        }
+        
+        function processEventCompletion(eventId) {
+            const events = loadEvents();
+            const archive = loadArchive();
+            
+            const eventIndex = events.findIndex(e => e.id === eventId);
+            if (eventIndex === -1) return false;
+            
+            const event = events[eventIndex];
+            
+            if (moveToArchiveIfCompleted(event)) {
+                // Добавляем в архив
+                archive.push({...event, archivedAt: Date.now()});
+                // Удаляем из активных
+                events.splice(eventIndex, 1);
+                
+                saveEvents(events);
+                saveArchive(archive);
+                
+                showNotification('Мероприятие выполнено и перемещено в архив');
+                return true;
+            }
+            
+            return false;
+        }
+        
+        function restoreFromArchive(eventId) {
+            const archive = loadArchive();
+            const events = loadEvents();
+            
+            const eventIndex = archive.findIndex(e => e.id === eventId);
+            if (eventIndex === -1) return false;
+            
+            const event = archive[eventIndex];
+            
+            // Убираем флаг архивации
+            delete event.archivedAt;
+            
+            // Возвращаем в активные
+            events.push(event);
+            // Удаляем из архива
+            archive.splice(eventIndex, 1);
+            
+            saveEvents(events);
+            saveArchive(archive);
+            
+            showNotification('Мероприятие восстановлено из архива');
+            return true;
+        }
+        
+        function copyEvent(eventId, fromArchive = false) {
+            const source = fromArchive ? loadArchive() : loadEvents();
+            const event = source.find(e => e.id === eventId);
+            if (!event) return;
+            
+            const copiedEvent = JSON.parse(JSON.stringify(event));
+            copiedEvent.id = generateEventId();
+            copiedEvent.title = `${event.title} (копия)`;
+            
+            // Сбрасываем статусы задач
+            copiedEvent.tasks.forEach(task => {
+                task.completed = false;
+                if (task.subtasks) {
+                    task.subtasks.forEach(sub => sub.completed = false);
+                }
+            });
+            
+            openEditEventForm(copiedEvent, true);
+            showNotification('Мероприятие скопировано. Можно изменить данные.');
+        }
+        
+        function deleteEvent(eventId, fromArchive = false) {
+            if (!confirm('Удалить это мероприятие?')) return;
+            
+            if (fromArchive) {
+                const archive = loadArchive();
+                const filtered = archive.filter(e => e.id !== eventId);
+                saveArchive(filtered);
+                renderArchiveList();
+                showNotification('Мероприятие удалено из архива');
+            } else {
+                const events = loadEvents();
+                const filtered = events.filter(e => e.id !== eventId);
+                saveEvents(filtered);
+                renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+                renderCalendar();
+                showNotification('Мероприятие удалено');
+            }
+        }
+        
+        function clearArchive() {
+            if (!confirm('Очистить архив? Все мероприятия будут безвозвратно удалены.')) return;
+            
+            saveArchive([]);
+            renderArchiveList();
+            updateBadges();
+            showNotification('Архив очищен');
+        }
+        
         function generateEventId() {
             return 'evt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
@@ -2000,6 +2315,38 @@
             if (parts.length !== 3) return '';
             const date = new Date(parts[2], parts[1] - 1, parts[0]);
             return days[date.getDay()];
+        }
+        
+        function updateBadges() {
+            const events = loadEvents();
+            const archive = loadArchive();
+            
+            const activeCount = events.length;
+            const archiveCount = archive.length;
+            
+            const activeBadge = document.getElementById('navActiveBadge');
+            const archiveBadge = document.getElementById('navArchiveBadge');
+            const headerBadge = document.getElementById('archiveBadge');
+            const archiveCountSpan = document.getElementById('archiveCount');
+            
+            if (activeCount > 0) {
+                activeBadge.textContent = activeCount;
+                activeBadge.style.display = 'block';
+            } else {
+                activeBadge.style.display = 'none';
+            }
+            
+            if (archiveCount > 0) {
+                archiveBadge.textContent = archiveCount;
+                archiveBadge.style.display = 'block';
+                headerBadge.textContent = archiveCount;
+                headerBadge.style.display = 'block';
+                if (archiveCountSpan) archiveCountSpan.textContent = archiveCount;
+            } else {
+                archiveBadge.style.display = 'none';
+                headerBadge.style.display = 'none';
+                if (archiveCountSpan) archiveCountSpan.textContent = '0';
+            }
         }
         
         // ==================== ПОИСК ====================
@@ -2045,7 +2392,7 @@
             return events.filter(event => event.categoryId === categoryId);
         }
         
-        // ==================== ОТОБРАЖЕНИЕ СПИСКА ====================
+        // ==================== ОТОБРАЖЕНИЕ СПИСКОВ ====================
         function renderEventsList(searchTerm = '') {
             const container = document.getElementById('eventsListContainer');
             const emptyState = document.getElementById('eventsEmptyState');
@@ -2059,6 +2406,7 @@
             
             if (events.length === 0) {
                 emptyState.style.display = 'block';
+                updateBadges();
                 return;
             }
             
@@ -2071,20 +2419,50 @@
             });
             
             events.forEach(event => {
-                const card = createEventCard(event);
+                const card = createEventCard(event, false);
                 container.appendChild(card);
             });
             
-            updateStatistics();
+            updateBadges();
         }
         
-        function createEventCard(event) {
+        function renderArchiveList(searchTerm = '') {
+            const container = document.getElementById('archiveListContainer');
+            const emptyState = document.getElementById('archiveEmptyState');
+            let archive = loadArchive();
+            
+            archive = filterEventsByCategory(archive, currentArchiveFilterCategory);
+            
+            const existingCards = container.querySelectorAll('.event-card');
+            existingCards.forEach(card => card.remove());
+            
+            if (archive.length === 0) {
+                emptyState.style.display = 'block';
+                updateBadges();
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            archive.sort((a, b) => (b.archivedAt || 0) - (a.archivedAt || 0));
+            
+            archive.forEach(event => {
+                const card = createEventCard(event, true);
+                container.appendChild(card);
+            });
+            
+            updateBadges();
+        }
+        
+        function createEventCard(event, isArchived = false) {
             const card = document.createElement('article');
-            card.className = 'event-card';
+            card.className = `event-card ${isArchived ? 'archived' : ''}`;
             card.dataset.id = event.id;
             
             const category = getCategoryById(event.categoryId);
-            card.style.borderLeftColor = `var(${category.color})`;
+            if (!isArchived) {
+                card.style.borderLeftColor = `var(${category.color})`;
+            }
             
             const dayOfWeek = getDayOfWeek(event.date);
             
@@ -2094,6 +2472,13 @@
             if (event.tasks && event.tasks.length > 0) {
                 totalTasks = event.tasks.length;
                 completedTasks = event.tasks.filter(task => task.completed).length;
+                
+                event.tasks.forEach(task => {
+                    if (task.subtasks) {
+                        totalTasks += task.subtasks.length;
+                        completedTasks += task.subtasks.filter(sub => sub.completed).length;
+                    }
+                });
             }
             
             const progressText = totalTasks > 0 ? `${completedTasks}/${totalTasks}` : '0/0';
@@ -2111,7 +2496,8 @@
                                         ${subtask.completed ? 'checked' : ''} 
                                         data-event-id="${event.id}" 
                                         data-task-id="${task.id}" 
-                                        data-subtask-id="${subtask.id}">
+                                        data-subtask-id="${subtask.id}"
+                                        ${isArchived ? 'disabled' : ''}>
                                     <span class="subtask-text ${subtask.completed ? 'completed' : ''}">${subtask.text}</span>
                                 </div>
                             `;
@@ -2120,7 +2506,7 @@
                     }
                     
                     const noteHtml = task.note ? `
-                        <div class="task-note-display ${task.note ? 'visible' : ''}">
+                        <div class="task-note-display visible">
                             <i class="fas fa-sticky-note"></i> ${task.note}
                         </div>
                     ` : '';
@@ -2131,7 +2517,8 @@
                                 <input type="checkbox" class="task-checkbox" 
                                     ${task.completed ? 'checked' : ''} 
                                     data-event-id="${event.id}" 
-                                    data-task-id="${task.id}">
+                                    data-task-id="${task.id}"
+                                    ${isArchived ? 'disabled' : ''}>
                                 <span class="task-text ${task.completed ? 'completed' : ''}">${task.text}</span>
                                 ${task.note ? '<i class="fas fa-sticky-note" style="color: var(--color-accent);"></i>' : ''}
                             </div>
@@ -2141,6 +2528,20 @@
                     `;
                 });
             }
+            
+            const actionsHtml = isArchived ? `
+                <div class="event-actions">
+                    <button class="event-copy-btn" title="Копировать мероприятие"><i class="far fa-copy"></i></button>
+                    <button class="event-restore-btn" title="Восстановить из архива"><i class="fas fa-undo-alt"></i></button>
+                    <button class="event-delete-btn" title="Удалить навсегда"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            ` : `
+                <div class="event-actions">
+                    <button class="event-copy-btn" title="Копировать мероприятие"><i class="far fa-copy"></i></button>
+                    <button class="event-edit-btn" title="Редактировать"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="event-delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `;
             
             card.innerHTML = `
                 <div class="event-header">
@@ -2152,12 +2553,9 @@
                         <span class="event-category-badge" style="background: var(${category.color}); color: white;">
                             ${category.name}
                         </span>
+                        ${isArchived ? '<span class="event-archived-badge">В архиве</span>' : ''}
                     </div>
-                    <div class="event-actions">
-                        <button class="event-copy-btn" title="Копировать мероприятие"><i class="far fa-copy"></i></button>
-                        <button class="event-edit-btn" title="Редактировать"><i class="fas fa-pencil-alt"></i></button>
-                        <button class="event-delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i></button>
-                    </div>
+                    ${actionsHtml}
                 </div>
                 <div class="event-body">
                     <div class="tasks-block">
@@ -2174,28 +2572,42 @@
                 </div>
             `;
             
-            card.querySelector('.event-copy-btn').addEventListener('click', () => copyEvent(event.id));
-            card.querySelector('.event-edit-btn').addEventListener('click', () => editEvent(event.id));
-            card.querySelector('.event-delete-btn').addEventListener('click', () => deleteEvent(event.id));
-            
-            card.querySelectorAll('.task-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function(e) {
-                    e.stopPropagation();
-                    const eventId = this.dataset.eventId;
-                    const taskId = this.dataset.taskId;
-                    toggleTaskCompletion(eventId, taskId, this.checked);
+            if (isArchived) {
+                card.querySelector('.event-copy-btn').addEventListener('click', () => copyEvent(event.id, true));
+                card.querySelector('.event-restore-btn').addEventListener('click', () => {
+                    if (restoreFromArchive(event.id)) {
+                        renderArchiveList();
+                        if (document.getElementById('eventsSection').style.display !== 'none') {
+                            renderEventsList();
+                        }
+                        renderCalendar();
+                    }
                 });
-            });
-            
-            card.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function(e) {
-                    e.stopPropagation();
-                    const eventId = this.dataset.eventId;
-                    const taskId = this.dataset.taskId;
-                    const subtaskId = this.dataset.subtaskId;
-                    toggleSubtaskCompletion(eventId, taskId, subtaskId, this.checked);
+                card.querySelector('.event-delete-btn').addEventListener('click', () => deleteEvent(event.id, true));
+            } else {
+                card.querySelector('.event-copy-btn').addEventListener('click', () => copyEvent(event.id, false));
+                card.querySelector('.event-edit-btn').addEventListener('click', () => editEvent(event.id));
+                card.querySelector('.event-delete-btn').addEventListener('click', () => deleteEvent(event.id, false));
+                
+                card.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function(e) {
+                        e.stopPropagation();
+                        const eventId = this.dataset.eventId;
+                        const taskId = this.dataset.taskId;
+                        toggleTaskCompletion(eventId, taskId, this.checked);
+                    });
                 });
-            });
+                
+                card.querySelectorAll('.subtask-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function(e) {
+                        e.stopPropagation();
+                        const eventId = this.dataset.eventId;
+                        const taskId = this.dataset.taskId;
+                        const subtaskId = this.dataset.subtaskId;
+                        toggleSubtaskCompletion(eventId, taskId, subtaskId, this.checked);
+                    });
+                });
+            }
             
             return card;
         }
@@ -2210,8 +2622,17 @@
                 if (task) {
                     task.completed = completed;
                     saveEvents(events);
-                    renderEventsList(document.getElementById('searchInput').value.toLowerCase());
-                    showNotification(completed ? 'Задача выполнена' : 'Задача отмечена как невыполненная');
+                    
+                    // Проверяем, не нужно ли переместить в архив
+                    if (processEventCompletion(eventId)) {
+                        // Если переместили, обновляем оба списка
+                        renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+                        renderArchiveList();
+                    } else {
+                        renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+                    }
+                    
+                    renderCalendar();
                 }
             }
         }
@@ -2227,44 +2648,28 @@
                     if (subtask) {
                         subtask.completed = completed;
                         saveEvents(events);
-                        renderEventsList(document.getElementById('searchInput').value.toLowerCase());
-                        showNotification(completed ? 'Подзадача выполнена' : 'Подзадача отмечена как невыполненная');
+                        
+                        // Проверяем, не нужно ли переместить в архив
+                        if (processEventCompletion(eventId)) {
+                            renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+                            renderArchiveList();
+                        } else {
+                            renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+                        }
+                        
+                        renderCalendar();
                     }
                 }
             }
         }
         
         // ==================== ОПЕРАЦИИ С МЕРОПРИЯТИЯМИ ====================
-        function copyEvent(eventId) {
-            const events = loadEvents();
-            const event = events.find(e => e.id === eventId);
-            if (!event) return;
-            
-            const copiedEvent = JSON.parse(JSON.stringify(event));
-            copiedEvent.id = generateEventId();
-            copiedEvent.title = `${event.title} (копия)`;
-            
-            openEditEventForm(copiedEvent, true);
-            showNotification('Мероприятие скопировано. Можно изменить данные.');
-        }
-        
         function editEvent(eventId) {
             const events = loadEvents();
             const event = events.find(e => e.id === eventId);
             if (!event) return;
             
             openEditEventForm(event, false);
-        }
-        
-        function deleteEvent(eventId) {
-            if (!confirm('Удалить это мероприятие?')) return;
-            
-            const events = loadEvents();
-            const filtered = events.filter(e => e.id !== eventId);
-            saveEvents(filtered);
-            renderEventsList(document.getElementById('searchInput').value.toLowerCase());
-            renderCalendar();
-            showNotification('Мероприятие удалено');
         }
         
         // ==================== КАЛЕНДАРЬ ====================
@@ -2287,8 +2692,11 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
             const events = loadEvents();
+            const archive = loadArchive();
+            const allEvents = [...events, ...archive];
+            
             const eventsByDate = {};
-            events.forEach(event => {
+            allEvents.forEach(event => {
                 if (eventsByDate[event.date]) {
                     eventsByDate[event.date].push(event);
                 } else {
@@ -2334,7 +2742,7 @@
                     if (uniqueCategories.length > 3) {
                         const moreDot = document.createElement('div');
                         moreDot.className = 'day-dot';
-                        moreDot.style.backgroundColor = 'var(--color-accent)';
+                        moreDot.style.backgroundColor = 'var(--color-archived)';
                         moreDot.title = `и ещё ${uniqueCategories.length - 3}`;
                         dotsDiv.appendChild(moreDot);
                     }
@@ -2366,18 +2774,27 @@
                 events.sort((a, b) => a.title.localeCompare(b.title));
                 events.forEach(event => {
                     const category = getCategoryById(event.categoryId);
+                    const isArchived = !!event.archivedAt;
                     
                     const eventDiv = document.createElement('div');
                     eventDiv.className = 'date-modal-event';
-                    eventDiv.style.borderLeftColor = `var(${category.color})`;
+                    eventDiv.style.borderLeftColor = isArchived ? 'var(--color-archived)' : `var(${category.color})`;
                     eventDiv.innerHTML = `
-                        <div class="date-modal-event-title">${event.title}</div>
+                        <div class="date-modal-event-title">${event.title} ${isArchived ? '📦' : ''}</div>
                         <div class="date-modal-event-category">${category.name}</div>
                     `;
                     
                     eventDiv.addEventListener('click', () => {
                         closeDateModal();
-                        editEvent(event.id);
+                        if (isArchived) {
+                            // Переключаемся на вкладку архива
+                            document.querySelector('[data-target="archiveSection"]').click();
+                            setTimeout(() => {
+                                document.getElementById(event.id)?.scrollIntoView({ behavior: 'smooth' });
+                            }, 100);
+                        } else {
+                            editEvent(event.id);
+                        }
                     });
                     
                     container.appendChild(eventDiv);
@@ -2668,11 +3085,12 @@
         
         function updateStatistics() {
             const events = loadEvents();
-            let totalEvents = events.length;
+            const archive = loadArchive();
+            
             let totalTasks = 0;
             let completedTasks = 0;
             
-            events.forEach(event => {
+            [...events, ...archive].forEach(event => {
                 if (event.tasks) {
                     totalTasks += event.tasks.length;
                     completedTasks += event.tasks.filter(task => task.completed).length;
@@ -2686,14 +3104,12 @@
                 }
             });
             
-            document.getElementById('statTotalEvents').textContent = totalEvents;
-            document.getElementById('statTotalTasks').textContent = totalTasks;
+            document.getElementById('statTotalEvents').textContent = events.length;
+            document.getElementById('statArchivedEvents').textContent = archive.length;
             document.getElementById('statCompletedTasks').textContent = completedTasks;
         }
         
-        // ==================== ЭКСПОРТ/ИМПОРТ (ИСПРАВЛЕННЫЙ) ====================
-        
-        // Вспомогательная функция для старого метода экспорта
+        // ==================== ЭКСПОРТ/ИМПОРТ ====================
         function fallbackExport(jsonData, fileName) {
             const blob = new Blob([jsonData], { type: 'application/json;charset=utf-8' });
             const url = URL.createObjectURL(blob);
@@ -2710,7 +3126,6 @@
             showNotification('✅ Данные экспортированы');
         }
         
-        // ==================== ИСПРАВЛЕННЫЙ ЭКСПОРТ (РАБОТАЕТ НА ТЕЛЕФОНЕ) ====================
         function exportData() {
             try {
                 const allData = {
@@ -2718,49 +3133,40 @@
                     exportedAt: new Date().toISOString(),
                     categories: categories,
                     events: loadEvents(),
+                    archive: loadArchive(),
                     profile: loadProfile()
                 };
                 
                 const jsonData = JSON.stringify(allData, null, 2);
                 const fileName = `events_diary_${new Date().toISOString().slice(0, 10)}.json`;
                 
-                // Проверяем поддержку современного API
                 if ('showSaveFilePicker' in window) {
-                    // НЕМЕДЛЕННЫЙ ВЫЗОВ АСИНХРОННОЙ ФУНКЦИИ (как в оригинале)
                     (async () => {
                         try {
                             const handle = await window.showSaveFilePicker({
                                 suggestedName: fileName,
                                 types: [{
                                     description: 'JSON файл',
-                                    accept: {
-                                        'application/json': ['.json'],
-                                    },
-                                }],
+                                    accept: { 'application/json': ['.json'] }
+                                }]
                             });
                             
                             const writable = await handle.createWritable();
                             await writable.write(jsonData);
                             await writable.close();
-                            
                             showNotification('✅ Данные сохранены в выбранную папку');
-                            
                         } catch (error) {
-                            // Пользователь нажал "Отмена"
                             if (error.name === 'AbortError') {
                                 showNotification('Экспорт отменён');
                             } else {
-                                // Другая ошибка - пробуем старый метод
-                                console.log('showSaveFilePicker не сработал, используем старый метод:', error);
+                                console.log('Ошибка, используем fallback:', error);
                                 fallbackExport(jsonData, fileName);
                             }
                         }
-                    })(); // <--- ВАЖНО: немедленный вызов
+                    })();
                 } else {
-                    // Старый метод для браузеров без поддержки
                     fallbackExport(jsonData, fileName);
                 }
-                
             } catch (error) {
                 console.error('Ошибка экспорта:', error);
                 showNotification('❌ Ошибка при экспорте', false);
@@ -2774,10 +3180,8 @@
             
             let statsHTML = '<ul style="list-style: none; padding-left: 0;">';
             statsHTML += `<li><i class="fas fa-tags"></i> Категорий: <strong>${importedData.categories?.length || 0}</strong></li>`;
-            statsHTML += `<li><i class="fas fa-calendar"></i> Мероприятий: <strong>${importedData.events?.length || 0}</strong></li>`;
-            if (importedData.exportedAt) {
-                statsHTML += `<li><i class="fas fa-clock"></i> Экспорт: <strong>${new Date(importedData.exportedAt).toLocaleDateString()}</strong></li>`;
-            }
+            statsHTML += `<li><i class="fas fa-calendar"></i> Активных: <strong>${importedData.events?.length || 0}</strong></li>`;
+            statsHTML += `<li><i class="fas fa-archive"></i> В архиве: <strong>${importedData.archive?.length || 0}</strong></li>`;
             statsHTML += '</ul>';
             
             statsDiv.innerHTML = statsHTML;
@@ -2806,10 +3210,13 @@
                     if (importedData.events) {
                         saveEvents(importedData.events);
                     }
+                    if (importedData.archive) {
+                        saveArchive(importedData.archive);
+                    }
                     if (importedData.profile) {
                         localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(importedData.profile));
                     }
-                } else if (option === 'merge') {
+                } else {
                     const currentEvents = loadEvents();
                     const newEvents = importedData.events || [];
                     
@@ -2820,6 +3227,17 @@
                         }
                     });
                     saveEvents(mergedEvents);
+                    
+                    const currentArchive = loadArchive();
+                    const newArchive = importedData.archive || [];
+                    
+                    const mergedArchive = [...currentArchive];
+                    newArchive.forEach(newItem => {
+                        if (!mergedArchive.some(a => a.id === newItem.id)) {
+                            mergedArchive.push(newItem);
+                        }
+                    });
+                    saveArchive(mergedArchive);
                     
                     if (importedData.categories) {
                         const currentCats = [...categories];
@@ -2834,9 +3252,11 @@
                 }
                 
                 renderCategoriesFilter();
+                renderArchiveCategoriesFilter();
                 renderCategoriesManager();
                 populateCategorySelect();
                 renderEventsList();
+                renderArchiveList();
                 renderCalendar();
                 loadProfile();
                 
@@ -2894,10 +3314,10 @@
         
         function updateHeader(activeTab) {
             const titles = {
-                'eventsSection': { title: 'Мой Дневник Мероприятий', subtitle: 'Планируй. Организуй. Выполняй.' },
-                'calendarSection': { title: '📅 Календарь', subtitle: 'Обзор мероприятий по датам' },
-                'profileSection': { title: '👤 Профиль и настройки', subtitle: 'Управление категориями и данными' },
-                'reserveSection': { title: '🧩 Резерв', subtitle: 'Место для будущих функций' }
+                'eventsSection': { title: 'Мой Дневник Мероприятий', subtitle: 'Активные мероприятия' },
+                'calendarSection': { title: '📅 Календарь', subtitle: 'Обзор по датам' },
+                'archiveSection': { title: '📦 Архив', subtitle: 'Выполненные мероприятия' },
+                'profileSection': { title: '👤 Профиль', subtitle: 'Настройки и статистика' }
             };
             const config = titles[activeTab] || titles['eventsSection'];
             document.getElementById('pageTitle').textContent = config.title;
@@ -2906,7 +3326,7 @@
         
         // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Дневник мероприятий v3.0 (финальная) загружен');
+            console.log('Дневник мероприятий v3.0 с архивом загружен');
             
             initTheme();
             initThemeSwitcher();
@@ -2930,6 +3350,7 @@
             
             loadProfile();
             renderEventsList();
+            renderArchiveList();
             initSearch();
             initCalendar();
             
@@ -2960,6 +3381,10 @@
                     if (targetId === 'calendarSection') {
                         renderCalendar();
                     }
+                    
+                    if (targetId === 'archiveSection') {
+                        renderArchiveList();
+                    }
                 });
             });
             
@@ -2972,19 +3397,21 @@
             
             document.getElementById('profileForm').addEventListener('submit', saveProfile);
             document.getElementById('addCategoryBtn').addEventListener('click', addNewCategory);
+            document.getElementById('clearArchiveBtn').addEventListener('click', clearArchive);
             
             initExportImport();
             
             // Демо-данные при первом запуске
             const events = loadEvents();
-            if (events.length === 0) {
+            const archive = loadArchive();
+            if (events.length === 0 && archive.length === 0) {
                 const demoAdded = localStorage.getItem('eventsDiary_demoAdded');
                 if (!demoAdded) {
                     const today = new Date();
                     const tomorrow = new Date(today);
                     tomorrow.setDate(tomorrow.getDate() + 1);
-                    const nextWeek = new Date(today);
-                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
                     
                     function formatDate(date) {
                         const day = String(date.getDate()).padStart(2, '0');
@@ -2999,17 +3426,14 @@
                             title: 'Подготовить отчет',
                             date: formatDate(tomorrow),
                             categoryId: 'cat_work',
-                            notes: 'Использовать данные за прошлый квартал',
+                            notes: 'Важная презентация',
                             tasks: [
                                 {
                                     id: generateTaskId(),
                                     text: 'Собрать данные',
-                                    completed: true,
-                                    note: 'Файл на рабочем столе',
-                                    subtasks: [
-                                        { id: generateSubtaskId(), text: 'Открыть папку', completed: true },
-                                        { id: generateSubtaskId(), text: 'Скопировать цифры', completed: false }
-                                    ]
+                                    completed: false,
+                                    note: null,
+                                    subtasks: []
                                 },
                                 {
                                     id: generateTaskId(),
@@ -3019,58 +3443,74 @@
                                     subtasks: []
                                 }
                             ],
-                            created: Date.now() - 86400000
+                            created: Date.now()
                         },
                         {
                             id: generateEventId(),
                             title: 'Закупить продукты',
                             date: formatDate(today),
                             categoryId: 'cat_shopping',
-                            notes: 'Захватить список',
+                            notes: 'Список в заметках',
                             tasks: [
                                 {
                                     id: generateTaskId(),
                                     text: 'Молоко',
-                                    completed: false,
-                                    note: 'Безлактозное',
+                                    completed: true,
+                                    note: null,
                                     subtasks: []
                                 },
                                 {
                                     id: generateTaskId(),
                                     text: 'Хлеб',
-                                    completed: true,
-                                    note: null,
-                                    subtasks: []
-                                }
-                            ],
-                            created: Date.now() - 172800000
-                        },
-                        {
-                            id: generateEventId(),
-                            title: 'Встреча с друзьями',
-                            date: formatDate(nextWeek),
-                            categoryId: 'cat_personal',
-                            notes: 'Забронировать столик',
-                            tasks: [
-                                {
-                                    id: generateTaskId(),
-                                    text: 'Выбрать ресторан',
                                     completed: false,
                                     note: null,
                                     subtasks: []
                                 }
                             ],
-                            created: Date.now() - 259200000
+                            created: Date.now() - 86400000
+                        }
+                    ];
+                    
+                    const demoArchive = [
+                        {
+                            id: generateEventId(),
+                            title: 'Прошлая встреча',
+                            date: formatDate(yesterday),
+                            categoryId: 'cat_personal',
+                            notes: 'Всё обсудили',
+                            tasks: [
+                                {
+                                    id: generateTaskId(),
+                                    text: 'Позвонить',
+                                    completed: true,
+                                    note: null,
+                                    subtasks: []
+                                },
+                                {
+                                    id: generateTaskId(),
+                                    text: 'Напомнить',
+                                    completed: true,
+                                    note: null,
+                                    subtasks: []
+                                }
+                            ],
+                            created: Date.now() - 172800000,
+                            archivedAt: Date.now() - 86400000
                         }
                     ];
                     
                     saveEvents(demoEvents);
+                    saveArchive(demoArchive);
                     localStorage.setItem('eventsDiary_demoAdded', 'true');
+                    
                     renderEventsList();
+                    renderArchiveList();
                     renderCalendar();
                     showNotification('Демо-данные загружены');
                 }
             }
+            
+            updateBadges();
         });
     </script>
 </body>
