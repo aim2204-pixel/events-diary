@@ -1551,7 +1551,6 @@
             <div class="subtitle" id="pageSubtitle">Планируй. Организуй. Выполняй.</div>
         </div>
         <button class="header-add-btn" id="globalAddBtn" title="Добавить новое мероприятие">+</button>
-        <span class="header-archive-badge" id="archiveBadge" style="display: none;">0</span>
     </header>
     
     <!-- ОСНОВНОЙ КОНТЕНТ -->
@@ -2317,37 +2316,35 @@
             return days[date.getDay()];
         }
         
-        function updateBadges() {
-            const events = loadEvents();
-            const archive = loadArchive();
-            
-            const activeCount = events.length;
-            const archiveCount = archive.length;
-            
-            const activeBadge = document.getElementById('navActiveBadge');
-            const archiveBadge = document.getElementById('navArchiveBadge');
-            const headerBadge = document.getElementById('archiveBadge');
-            const archiveCountSpan = document.getElementById('archiveCount');
-            
-            if (activeCount > 0) {
-                activeBadge.textContent = activeCount;
-                activeBadge.style.display = 'block';
-            } else {
-                activeBadge.style.display = 'none';
-            }
-            
-            if (archiveCount > 0) {
-                archiveBadge.textContent = archiveCount;
-                archiveBadge.style.display = 'block';
-                headerBadge.textContent = archiveCount;
-                headerBadge.style.display = 'block';
-                if (archiveCountSpan) archiveCountSpan.textContent = archiveCount;
-            } else {
-                archiveBadge.style.display = 'none';
-                headerBadge.style.display = 'none';
-                if (archiveCountSpan) archiveCountSpan.textContent = '0';
-            }
-        }
+function updateBadges() {
+    const events = loadEvents();
+    const archive = loadArchive();
+    
+    const activeCount = events.length;
+    const archiveCount = archive.length;
+    
+    const activeBadge = document.getElementById('navActiveBadge');
+    const archiveBadge = document.getElementById('navArchiveBadge');
+    const archiveCountSpan = document.getElementById('archiveCount');
+    
+    // Бейдж на иконке списка (активные)
+    if (activeCount > 0) {
+        activeBadge.textContent = activeCount;
+        activeBadge.style.display = 'block';
+    } else {
+        activeBadge.style.display = 'none';
+    }
+    
+    // Бейдж на иконке архива
+    if (archiveCount > 0) {
+        archiveBadge.textContent = archiveCount;
+        archiveBadge.style.display = 'block';
+        if (archiveCountSpan) archiveCountSpan.textContent = archiveCount;
+    } else {
+        archiveBadge.style.display = 'none';
+        if (archiveCountSpan) archiveCountSpan.textContent = '0';
+    }
+}
         
         // ==================== ПОИСК ====================
         function initSearch() {
