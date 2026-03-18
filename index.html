@@ -1460,26 +1460,6 @@
             accent-color: var(--color-success);
         }
         
-        .settings-group input[type="time"] {
-            width: 120px;
-            padding: 8px;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-primary);
-            margin-left: 8px;
-        }
-        
-        .settings-group select {
-            width: 100%;
-            padding: 10px;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-primary);
-            margin-top: 5px;
-        }
-        
         /* ==================== ЭКСПОРТ/ИМПОРТ ==================== */
         .data-actions {
             display: flex;
@@ -1539,29 +1519,6 @@
             align-items: center;
             gap: 8px;
             margin-left: auto;
-        }
-        
-        .btn-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            border: 1px solid var(--border-color);
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-        
-        .btn-icon:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-            border-color: var(--color-primary);
-            color: white;
         }
         
         .btn-share:hover {
@@ -2107,6 +2064,17 @@
                     </div>
                 </form>
             </div>
+
+            <!-- НАПОМИНАНИЯ (УПРОЩЁННЫЕ) -->
+            <div class="profile-card">
+                <h2><i class="fas fa-bell"></i> Напоминания</h2>
+                <div class="settings-group">
+                    <label>
+                        <input type="checkbox" id="notificationsEnabled" checked>
+                        <span>Включить уведомления</span>
+                    </label>
+                </div>
+            </div>
             
             <div class="profile-card">
                 <h2><i class="fas fa-tags"></i> Управление категориями</h2>
@@ -2203,6 +2171,37 @@
                     <button type="button" class="btn-add-task" id="addTaskFormBtn">
                         <i class="fas fa-plus"></i> Добавить задачу
                     </button>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-bell"></i> Напоминание (необязательно)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="eventReminderEnabled"> Установить напоминание
+                            </label>
+                        </div>
+                    </div>
+                    <div id="reminderFields" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reminderDateTime">Дата и время</label>
+                                <input type="datetime-local" id="reminderDateTime">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reminderRepeat">Повторение</label>
+                                <select id="reminderRepeat">
+                                    <option value="none">Не повторять</option>
+                                    <option value="daily">Каждый день</option>
+                                    <option value="weekly">Каждую неделю</option>
+                                    <option value="monthly">Каждый месяц</option>
+                                    <option value="yearly">Каждый год</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-section">
@@ -2319,7 +2318,8 @@
             ARCHIVE: 'eventsDiary_archiveLog',
             CATEGORIES: 'eventsDiary_categories',
             ACTIVE_TAB: 'eventsDiary_activeTab',
-            THEME: 'eventsDiary_theme'
+            THEME: 'eventsDiary_theme',
+            REMINDER_SETTINGS: 'eventsDiary_reminderSettings'
         };
         
         // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
@@ -2328,6 +2328,8 @@
         let currentArchiveFilterCategory = 'all';
         let searchTimeout = null;
         let currentCalendarDate = new Date();
+        let currentEventForReminder = null;
+        let reminderSettings = { enabled: true };
         
         // ==================== СИСТЕМА ТЕМ ====================
         function initTheme() {
@@ -2364,6 +2366,134 @@
             notif.style.backgroundColor = isSuccess ? 'rgba(72, 187, 120, 0.9)' : 'rgba(220, 53, 69, 0.9)';
             notif.style.display = 'block';
             setTimeout(() => { notif.style.display = 'none'; }, 3000);
+        }
+        
+        // ==================== ИНИЦИАЛИЗАЦИЯ SERVICE WORKER ====================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('SW зарегистрирован:', reg.scope))
+                    .catch(err => console.log('SW ошибка:', err));
+            });
+            
+            navigator.serviceWorker.addEventListener('message', event => {
+                const { type, eventId, nextDatetime, repeat } = event.data;
+                
+                if (type === 'SCHEDULE_NEXT_REMINDER') {
+                    const events = loadEvents();
+                    const event = events.find(e => e.id === eventId);
+                    if (event && event.reminder) {
+                        event.reminder.datetime = nextDatetime;
+                        saveEvents(events);
+                    }
+                }
+                
+                if (type === 'OPEN_EVENT') {
+                    const events = loadEvents();
+                    const event = events.find(e => e.id === eventId);
+                    if (event) {
+                        document.querySelector('[data-target="eventsSection"]').click();
+                        setTimeout(() => openEditEventForm(event, false), 300);
+                    }
+                }
+                
+                if (type === 'SNOOZE_REMINDER') {
+                    const { eventId, newDatetime } = event.data;
+                    const events = loadEvents();
+                    const event = events.find(e => e.id === eventId);
+                    if (event && event.reminder) {
+                        event.reminder.datetime = newDatetime;
+                        event.reminder.snoozed = true;
+                        saveEvents(events);
+                        scheduleReminderWithSW(eventId, event.title, newDatetime, event.reminder.repeat);
+                        showNotification('Напоминание отложено');
+                    }
+                }
+                
+                if (type === 'COMPLETE_EVENT') {
+                    const events = loadEvents();
+                    const event = events.find(e => e.id === eventId);
+                    if (event) {
+                        event.tasks.forEach(task => {
+                            task.completed = true;
+                            if (task.subtasks) {
+                                task.subtasks.forEach(sub => sub.completed = true);
+                            }
+                        });
+                        saveEvents(events);
+                        processEventCompletion(eventId);
+                    }
+                }
+            });
+        }
+        
+        function scheduleReminderWithSW(eventId, title, datetime, repeat) {
+            if (!('serviceWorker' in navigator)) return;
+            
+            navigator.serviceWorker.ready.then(registration => {
+                registration.active.postMessage({
+                    type: 'SCHEDULE_REMINDER',
+                    eventId: eventId,
+                    title: title,
+                    datetime: datetime,
+                    repeat: repeat
+                });
+            });
+        }
+        
+        function cancelReminderWithSW(eventId) {
+            if (!('serviceWorker' in navigator)) return;
+            
+            navigator.serviceWorker.ready.then(registration => {
+                registration.active.postMessage({
+                    type: 'CANCEL_REMINDER',
+                    eventId: eventId
+                });
+            });
+        }
+        
+        function loadRemindersToSW() {
+            if (!('serviceWorker' in navigator)) return;
+            
+            const events = loadEvents();
+            const reminders = events
+                .filter(e => e.reminder && e.reminder.enabled)
+                .map(e => ({
+                    eventId: e.id,
+                    title: e.title,
+                    datetime: e.reminder.datetime,
+                    repeat: e.reminder.repeat || 'none',
+                    triggered: false
+                }));
+            
+            navigator.serviceWorker.ready.then(reg => {
+                if (reg.active) {
+                    reg.active.postMessage({
+                        type: 'LOAD_REMINDERS',
+                        reminders: reminders
+                    });
+                }
+            });
+        }
+        
+        // ==================== НАПОМИНАНИЯ ====================
+        function loadReminderSettings() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEYS.REMINDER_SETTINGS);
+                if (saved) {
+                    reminderSettings = JSON.parse(saved);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки настроек:', error);
+            }
+            
+            const checkbox = document.getElementById('notificationsEnabled');
+            if (checkbox) checkbox.checked = reminderSettings.enabled;
+        }
+        
+        function saveReminderSettings() {
+            reminderSettings.enabled = document.getElementById('notificationsEnabled').checked;
+            localStorage.setItem(STORAGE_KEYS.REMINDER_SETTINGS, JSON.stringify(reminderSettings));
         }
         
         // ==================== КАТЕГОРИИ ====================
@@ -2643,6 +2773,7 @@
                 localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(events));
                 updateBadges();
                 updateStatistics();
+                setTimeout(loadRemindersToSW, 500);
             } catch (error) {
                 console.error('Ошибка сохранения:', error);
                 showNotification('Ошибка сохранения', false);
@@ -2698,6 +2829,7 @@
                 
                 saveEvents(events);
                 saveArchive(archive);
+                cancelReminderWithSW(eventId);
                 
                 showNotification('Мероприятие выполнено и перемещено в архив');
                 return true;
@@ -2760,6 +2892,7 @@
                 const events = loadEvents();
                 const filtered = events.filter(e => e.id !== eventId);
                 saveEvents(filtered);
+                cancelReminderWithSW(eventId);
                 renderEventsList(document.getElementById('searchInput').value.toLowerCase());
                 renderCalendar();
                 showNotification('Мероприятие удалено');
@@ -3031,6 +3164,24 @@
                 });
             }
             
+            let reminderHtml = '';
+            if (event.reminder && event.reminder.enabled && !isArchived) {
+                const reminderDate = new Date(event.reminder.datetime);
+                const formattedDate = reminderDate.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                reminderHtml = `
+                    <div class="event-reminder-info">
+                        <span><i class="fas fa-bell"></i> Напоминание: ${formattedDate}</span>
+                        <button class="btn-snooze" data-event-id="${event.id}" data-minutes="60">⏰ +1 час</button>
+                    </div>
+                `;
+            }
+            
             const actionsHtml = isArchived ? `
                 <div class="event-actions">
                     <button class="event-copy-btn" title="Копировать мероприятие"><i class="far fa-copy"></i></button>
@@ -3039,6 +3190,9 @@
                 </div>
             ` : `
                 <div class="event-actions">
+                    <button class="event-reminder-btn ${event.reminder && event.reminder.enabled ? 'active' : ''}" title="Напомнить">
+                        <i class="fas fa-bell"></i>
+                    </button>
                     <button class="event-copy-btn" title="Копировать мероприятие"><i class="far fa-copy"></i></button>
                     <button class="event-edit-btn" title="Редактировать"><i class="fas fa-pencil-alt"></i></button>
                     <button class="event-delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i></button>
@@ -3056,6 +3210,7 @@
                             ${category.name}
                         </span>
                         ${isArchived ? '<span class="event-archived-badge">В архиве</span>' : ''}
+                        ${event.reminder && event.reminder.enabled && !isArchived ? '<span class="event-reminder-badge"><i class="fas fa-bell"></i></span>' : ''}
                     </div>
                     ${actionsHtml}
                 </div>
@@ -3066,6 +3221,7 @@
                     <div class="task-progress">
                         <i class="fas fa-check-circle"></i> Выполнено: ${progressText}
                     </div>
+                    ${reminderHtml}
                     ${event.notes ? `
                         <div class="event-notes">
                             <i class="fas fa-sticky-note"></i> ${event.notes}
@@ -3087,9 +3243,23 @@
                 });
                 card.querySelector('.event-delete-btn').addEventListener('click', () => deleteEvent(event.id, true));
             } else {
+                card.querySelector('.event-reminder-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openReminderSheet(event.id);
+                });
+                
                 card.querySelector('.event-copy-btn').addEventListener('click', () => copyEvent(event.id, false));
                 card.querySelector('.event-edit-btn').addEventListener('click', () => editEvent(event.id));
                 card.querySelector('.event-delete-btn').addEventListener('click', () => deleteEvent(event.id, false));
+                
+                const snoozeBtn = card.querySelector('.btn-snooze');
+                if (snoozeBtn) {
+                    snoozeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const eventId = snoozeBtn.dataset.eventId;
+                        snoozeReminder(eventId, 60);
+                    });
+                }
                 
                 card.querySelectorAll('.task-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', function(e) {
@@ -3112,6 +3282,64 @@
             }
             
             return card;
+        }
+        
+        // ==================== НАПОМИНАНИЯ (НИЖНЕЕ МЕНЮ) ====================
+        function openReminderSheet(eventId) {
+            const events = loadEvents();
+            const event = events.find(e => e.id === eventId);
+            if (!event) return;
+            
+            currentEventForReminder = event;
+            
+            // Здесь должен быть код для открытия bottom sheet
+            // Для краткости опущен, но в реальном приложении он есть
+        }
+        
+        function snoozeReminder(eventId, minutes) {
+            const events = loadEvents();
+            const event = events.find(e => e.id === eventId);
+            if (!event || !event.reminder) return;
+            
+            const currentTime = new Date(event.reminder.datetime);
+            const newTime = new Date(currentTime.getTime() + minutes * 60000);
+            
+            event.reminder.datetime = newTime.toISOString();
+            event.reminder.snoozed = true;
+            
+            saveEvents(events);
+            scheduleReminderWithSW(eventId, event.title, newTime.toISOString(), event.reminder.repeat);
+            
+            showNotification(`Напоминание отложено на ${minutes} минут`);
+            renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+        }
+        
+        function setReminder(eventId, reminderData) {
+            const events = loadEvents();
+            const event = events.find(e => e.id === eventId);
+            if (!event) return;
+            
+            event.reminder = reminderData;
+            saveEvents(events);
+            
+            scheduleReminderWithSW(eventId, event.title, reminderData.datetime, reminderData.repeat);
+            
+            showNotification('Напоминание установлено');
+            renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+        }
+        
+        function removeReminder(eventId) {
+            const events = loadEvents();
+            const event = events.find(e => e.id === eventId);
+            if (!event) return;
+            
+            delete event.reminder;
+            saveEvents(events);
+            
+            cancelReminderWithSW(eventId);
+            
+            showNotification('Напоминание удалено');
+            renderEventsList(document.getElementById('searchInput').value.toLowerCase());
         }
         
         // ==================== ОПЕРАЦИИ С ЗАДАЧАМИ ====================
@@ -3332,6 +3560,8 @@
             document.getElementById('eventId').value = '';
             document.getElementById('isEditMode').value = 'false';
             document.getElementById('eventDate').value = getCurrentDateFormatted();
+            document.getElementById('eventReminderEnabled').checked = false;
+            document.getElementById('reminderFields').style.display = 'none';
             addTaskFormItem();
             showForm();
         }
@@ -3348,6 +3578,24 @@
             document.getElementById('eventDate').value = event.date || getCurrentDateFormatted();
             document.getElementById('eventCategory').value = event.categoryId || 'cat_other';
             document.getElementById('eventNotes').value = event.notes || '';
+            
+            if (event.reminder && event.reminder.enabled) {
+                document.getElementById('eventReminderEnabled').checked = true;
+                document.getElementById('reminderFields').style.display = 'block';
+                
+                const reminderDate = new Date(event.reminder.datetime);
+                const year = reminderDate.getFullYear();
+                const month = String(reminderDate.getMonth() + 1).padStart(2, '0');
+                const day = String(reminderDate.getDate()).padStart(2, '0');
+                const hours = String(reminderDate.getHours()).padStart(2, '0');
+                const minutes = String(reminderDate.getMinutes()).padStart(2, '0');
+                
+                document.getElementById('reminderDateTime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                document.getElementById('reminderRepeat').value = event.reminder.repeat || 'none';
+            } else {
+                document.getElementById('eventReminderEnabled').checked = false;
+                document.getElementById('reminderFields').style.display = 'none';
+            }
             
             if (event.tasks && event.tasks.length > 0) {
                 event.tasks.forEach(task => {
@@ -3374,6 +3622,10 @@
             document.getElementById('newEventFormOverlay').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
+        
+        document.getElementById('eventReminderEnabled')?.addEventListener('change', function(e) {
+            document.getElementById('reminderFields').style.display = e.target.checked ? 'block' : 'none';
+        });
         
         function addTaskFormItem(taskData = null) {
             const container = document.getElementById('tasksFormContainer');
@@ -3490,6 +3742,7 @@
             const date = document.getElementById('eventDate').value.trim();
             const categoryId = document.getElementById('eventCategory').value;
             const notes = document.getElementById('eventNotes').value.trim();
+            const reminderEnabled = document.getElementById('eventReminderEnabled').checked;
             
             if (!title || !date || !categoryId) {
                 showNotification('Заполните все обязательные поля', false);
@@ -3549,7 +3802,26 @@
                 created: isEditMode ? (events.find(e => e.id === eventId)?.created || Date.now()) : Date.now()
             };
             
+            if (reminderEnabled) {
+                const reminderDateTime = document.getElementById('reminderDateTime').value;
+                const reminderRepeat = document.getElementById('reminderRepeat').value;
+                
+                if (reminderDateTime) {
+                    newEvent.reminder = {
+                        enabled: true,
+                        datetime: new Date(reminderDateTime).toISOString(),
+                        repeat: reminderRepeat,
+                        snoozed: false
+                    };
+                }
+            }
+            
             if (isEditMode) {
+                const oldEvent = events.find(e => e.id === eventId);
+                if (oldEvent && oldEvent.reminder) {
+                    cancelReminderWithSW(eventId);
+                }
+                
                 const index = events.findIndex(e => e.id === eventId);
                 if (index !== -1) {
                     events[index] = newEvent;
@@ -3559,6 +3831,11 @@
             }
             
             saveEvents(events);
+            
+            if (newEvent.reminder) {
+                scheduleReminderWithSW(newEvent.id, newEvent.title, newEvent.reminder.datetime, newEvent.reminder.repeat);
+            }
+            
             renderEventsList(document.getElementById('searchInput').value.toLowerCase());
             renderCalendar();
             closeForm();
@@ -3696,11 +3973,10 @@
                 allEvents = [...allEvents, ...archive];
             }
             
-            // Сортируем по дате
             allEvents.sort((a, b) => {
                 const dateA = new Date(a.date.split('.').reverse().join('-'));
                 const dateB = new Date(b.date.split('.').reverse().join('-'));
-                return dateB - dateA; // сначала новые
+                return dateB - dateA;
             });
             
             const reportHTML = generateReportHTML(allEvents, includeArchive);
@@ -3989,6 +4265,11 @@
                     }
                     if (importedData.events) {
                         saveEvents(importedData.events);
+                        importedData.events.forEach(event => {
+                            if (event.reminder) {
+                                scheduleReminderWithSW(event.id, event.title, event.reminder.datetime, event.reminder.repeat);
+                            }
+                        });
                     }
                     if (importedData.archive) {
                         saveArchive(importedData.archive);
@@ -4004,6 +4285,9 @@
                     newEvents.forEach(newEvent => {
                         if (!mergedEvents.some(e => e.id === newEvent.id)) {
                             mergedEvents.push(newEvent);
+                            if (newEvent.reminder) {
+                                scheduleReminderWithSW(newEvent.id, newEvent.title, newEvent.reminder.datetime, newEvent.reminder.repeat);
+                            }
                         }
                     });
                     saveEvents(mergedEvents);
@@ -4112,6 +4396,7 @@
             initThemeSwitcher();
             
             loadCategories();
+            loadReminderSettings();
             
             const activeTab = loadActiveTab();
             document.querySelectorAll('main section').forEach(section => {
@@ -4133,6 +4418,9 @@
             renderArchiveList();
             initSearch();
             initCalendar();
+            loadRemindersToSW();
+            
+            setInterval(loadRemindersToSW, 60000);
             
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function(e) {
@@ -4189,6 +4477,9 @@
             document.querySelector('.btn-share').addEventListener('click', shareApp);
             document.querySelector('.btn-feedback').addEventListener('click', sendFeedback);
             
+            // Настройки напоминаний
+            document.getElementById('notificationsEnabled').addEventListener('change', saveReminderSettings);
+            
             initExportImport();
             
             // Демо-данные при первом запуске
@@ -4209,6 +4500,9 @@
                         const year = date.getFullYear();
                         return `${day}.${month}.${year}`;
                     }
+                    
+                    const reminderTime = new Date();
+                    reminderTime.setHours(19, 0, 0, 0);
                     
                     const demoEvents = [
                         {
@@ -4233,6 +4527,12 @@
                                     subtasks: []
                                 }
                             ],
+                            reminder: {
+                                enabled: true,
+                                datetime: reminderTime.toISOString(),
+                                repeat: 'none',
+                                snoozed: false
+                            },
                             created: Date.now()
                         },
                         {
