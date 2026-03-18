@@ -4449,52 +4449,70 @@
         });
     </script>
     
-    <!-- НОВЫЙ КОД ДЛЯ НАПОМИНАНИЙ -->
-    <script>
-    // ==================== ЗАГРУЗКА НАПОМИНАНИЙ В SERVICE WORKER ====================
+<!-- Добавьте ЭТОТ КОД перед закрывающим </body> -->
+<script>
+// ==================== ГАРАНТИРОВАННАЯ ЗАГРУЗКА НАПОМИНАНИЙ ====================
+(function() {
+    console.log('[APP] Инициализация напоминаний');
+    
     function loadRemindersToSW() {
         if (!('serviceWorker' in navigator)) return;
         
-        const events = (typeof loadEvents === 'function') ? loadEvents() : [];
-        const reminders = events
-            .filter(e => e.reminder && e.reminder.enabled)
-            .map(e => ({
-                eventId: e.id,
-                title: e.title,
-                datetime: e.reminder.datetime,
-                repeat: e.reminder.repeat || 'none'
-            }));
-        
-        navigator.serviceWorker.ready.then(registration => {
-            if (registration.active) {
-                registration.active.postMessage({
-                    type: 'LOAD_REMINDERS',
-                    reminders: reminders
+        try {
+            const events = loadEvents();
+            const reminders = events
+                .filter(e => e.reminder?.enabled)
+                .map(e => ({
+                    eventId: e.id,
+                    title: e.title,
+                    datetime: e.reminder.datetime,
+                    repeat: e.reminder.repeat || 'none',
+                    triggered: false
+                }));
+            
+            navigator.serviceWorker.ready.then(reg => {
+                if (reg.active) {
+                    reg.active.postMessage({
+                        type: 'LOAD_REMINDERS',
+                        reminders: reminders
+                    });
+                    console.log('[APP] Отправлено напоминаний:', reminders.length);
+                }
+            });
+        } catch (e) {
+            console.error('[APP] Ошибка:', e);
+        }
+    }
+    
+    // Принудительная регистрация нового Service Worker
+    if ('serviceWorker' in navigator) {
+        // Удаляем старый
+        navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(reg => reg.unregister());
+            console.log('[APP] Старые SW удалены');
+            
+            // Регистрируем новый
+            navigator.serviceWorker.register('service-worker.js?v=' + Date.now())
+                .then(reg => {
+                    console.log('[APP] Новый SW зарегистрирован');
+                    setTimeout(loadRemindersToSW, 2000);
                 });
-                console.log('[APP] Отправлены напоминания в SW:', reminders.length);
-            }
         });
     }
     
-    // Переопределяем saveEvents, если она существует
+    // Перехватываем saveEvents
     if (typeof saveEvents === 'function') {
-        const originalSaveEvents = saveEvents;
+        const original = saveEvents;
         saveEvents = function(events) {
-            originalSaveEvents(events);
+            original(events);
             setTimeout(loadRemindersToSW, 500);
         };
     }
     
-    // Загружаем напоминания при старте
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(() => {
-            setTimeout(loadRemindersToSW, 1000);
-        });
-    }
-    
-    // Периодическая проверка (каждые 30 секунд)
-    setInterval(loadRemindersToSW, 30000);
-    </script>
+    // Периодическая проверка
+    setInterval(loadRemindersToSW, 60000);
+})();
+</script>
     <!-- КОНЕЦ НОВОГО КОДА -->
 </body>
 </html>
