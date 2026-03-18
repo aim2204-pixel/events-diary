@@ -1,5 +1,5 @@
-// service-worker.js - v2.0.0 с поддержкой напоминаний
-const CACHE_NAME = 'events-diary-v2.0.0';
+// service-worker.js - v2.1.0 с работающими напоминаниями
+const CACHE_NAME = 'events-diary-v2.1.0';
 const CACHE_PREFIX = 'events-diary';
 
 const INITIAL_CACHE = [
@@ -11,6 +11,9 @@ const INITIAL_CACHE = [
   '/events-diary/maskable_icon_x192.png',
   '/events-diary/maskable_icon_x512.png'
 ];
+
+// Хранилище активных таймеров
+const reminderTimers = new Map();
 
 self.addEventListener('install', event => {
   console.log('[SW] Установка версии:', CACHE_NAME);
@@ -62,19 +65,64 @@ self.addEventListener('message', event => {
     const { eventId } = event.data;
     cancelReminder(eventId);
   }
+  
+  if (event.data && event.data.type === 'TEST_NOTIFICATION') {
+    const { sound } = event.data;
+    testNotification(sound);
+  }
 });
 
+function testNotification(sound) {
+  self.registration.showNotification('🔔 Тестовое уведомление', {
+    body: 'Если вы это видите, уведомления работают!',
+    icon: '/events-diary/maskable_icon_x192.png',
+    badge: '/events-diary/maskable_icon_x72.png',
+    silent: sound === 'silent',
+    tag: 'test-notification',
+    requireInteraction: true,
+    actions: [
+      { action: 'close', title: 'Закрыть' }
+    ]
+  });
+}
+
 function scheduleReminder(eventId, title, datetime, repeat) {
+  // Отменяем предыдущий таймер для этого события
+  cancelReminder(eventId);
+  
   const reminderTime = new Date(datetime).getTime();
   const now = Date.now();
   const delay = reminderTime - now;
   
-  if (delay <= 0) return;
+  console.log(`[SW] Планируем напоминание для ${eventId} через ${Math.round(delay/1000)} сек`);
+  
+  if (delay <= 0) {
+    console.log('[SW] Время уже прошло, показываем сразу');
+    showReminderNotification(eventId, title, datetime, repeat);
+    return;
+  }
+  
+  // Устанавливаем таймер
+  const timerId = setTimeout(() => {
+    showReminderNotification(eventId, title, datetime, repeat);
+    reminderTimers.delete(eventId);
+  }, delay);
+  
+  reminderTimers.set(eventId, timerId);
+}
+
+function showReminderNotification(eventId, title, datetime, repeat) {
+  const formattedTime = new Date(datetime).toLocaleString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit'
+  });
   
   self.registration.showNotification(
     `🔔 Напоминание: ${title}`,
     {
-      body: `Мероприятие запланировано на ${new Date(datetime).toLocaleString('ru-RU')}`,
+      body: `Мероприятие запланировано на ${formattedTime}`,
       icon: '/events-diary/maskable_icon_x192.png',
       badge: '/events-diary/maskable_icon_x72.png',
       tag: `reminder-${eventId}`,
@@ -94,6 +142,7 @@ function scheduleReminder(eventId, title, datetime, repeat) {
     }
   );
   
+  // Планируем следующее повторение, если нужно
   if (repeat !== 'none') {
     scheduleNextRepeat(eventId, title, new Date(datetime), repeat);
   }
@@ -119,6 +168,7 @@ function scheduleNextRepeat(eventId, title, lastDate, repeat) {
       return;
   }
   
+  // Сообщаем клиенту о следующем напоминании
   self.clients.matchAll().then(clients => {
     clients.forEach(client => {
       client.postMessage({
@@ -129,9 +179,19 @@ function scheduleNextRepeat(eventId, title, lastDate, repeat) {
       });
     });
   });
+  
+  // Планируем следующее
+  scheduleReminder(eventId, title, nextDate.toISOString(), repeat);
 }
 
 function cancelReminder(eventId) {
+  if (reminderTimers.has(eventId)) {
+    clearTimeout(reminderTimers.get(eventId));
+    reminderTimers.delete(eventId);
+    console.log(`[SW] Отменено напоминание для ${eventId}`);
+  }
+  
+  // Закрываем все непоказанные уведомления
   self.registration.getNotifications({ tag: `reminder-${eventId}` })
     .then(notifications => {
       notifications.forEach(notification => notification.close());
@@ -144,10 +204,13 @@ self.addEventListener('notificationclick', event => {
   const action = event.action;
   const data = event.notification.data;
   
+  if (!data) return;
+  
   if (action === 'open') {
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true })
         .then(clientList => {
+          // Ищем уже открытое окно с приложением
           for (const client of clientList) {
             if (client.url.includes('/events-diary/') && 'focus' in client) {
               client.postMessage({
@@ -157,6 +220,7 @@ self.addEventListener('notificationclick', event => {
               return client.focus();
             }
           }
+          // Если нет открытого окна, открываем новое
           return clients.openWindow(`/events-diary/?event=${data.eventId}`);
         })
     );
