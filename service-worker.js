@@ -1,14 +1,15 @@
-// service-worker.js - v2.3.0 - ПРИНУДИТЕЛЬНЫЙ СБРОС
-const CACHE_NAME = 'events-diary-v2.3.0-' + Date.now();
-const CACHE_PREFIX = 'events-diary';
+// service-worker.js - v2.2.2
+const CACHE_NAME = 'events-diary-v2.2.2-' + Date.now();
 
-// УНИЧТОЖАЕМ ВСЁ СТАРОЕ ПРИ АКТИВАЦИИ
+self.addEventListener('install', event => {
+  console.log('[SW] Установка');
+  self.skipWaiting();
+});
+
 self.addEventListener('activate', event => {
-  console.log('[SW] АКТИВАЦИЯ НОВОЙ ВЕРСИИ');
-  
+  console.log('[SW] Активация');
   event.waitUntil(
     Promise.all([
-      // Удаляем ВСЕ старые кэши без разбора
       caches.keys().then(cacheNames => {
         return Promise.all(
           cacheNames.map(name => {
@@ -17,18 +18,14 @@ self.addEventListener('activate', event => {
           })
         );
       }),
-      // Захватываем контроль над всеми клиентами
       self.clients.claim()
     ]).then(() => {
-      console.log('[SW] ГОТОВ К РАБОТЕ');
-      // Запускаем проверку напоминаний каждую минуту
       setInterval(checkReminders, 60000);
       checkReminders();
     })
   );
 });
 
-// Хранилище напоминаний
 let reminders = [];
 
 self.addEventListener('message', event => {
@@ -37,32 +34,26 @@ self.addEventListener('message', event => {
     console.log('[SW] Загружено напоминаний:', reminders.length);
   }
   
-  if (event.data && event.data.type === 'TEST_NOTIFICATION') {
-    testNotification();
+  if (event.data && event.data.type === 'SCHEDULE_REMINDER') {
+    const { eventId, title, datetime, repeat } = event.data;
+    reminders = reminders.filter(r => r.eventId !== eventId);
+    reminders.push({ eventId, title, datetime, repeat, triggered: false });
+    console.log('[SW] Добавлено напоминание:', eventId);
+  }
+  
+  if (event.data && event.data.type === 'CANCEL_REMINDER') {
+    reminders = reminders.filter(r => r.eventId !== eventId);
+    console.log('[SW] Удалено напоминание:', eventId);
   }
 });
 
-function testNotification() {
-  self.registration.showNotification('🔔 Тестовое уведомление', {
-    body: 'Уведомления работают!',
-    icon: '/events-diary/maskable_icon_x192.png',
-    badge: '/events-diary/maskable_icon_x72.png',
-    tag: 'test-' + Date.now(),
-    requireInteraction: true
-  });
-}
-
 function checkReminders() {
   const now = Date.now();
-  console.log('[SW] Проверка напоминаний...', new Date().toLocaleTimeString());
   
   reminders.forEach(reminder => {
     const reminderTime = new Date(reminder.datetime).getTime();
     
-    // Проверяем, что время наступило (погрешность 1 минута)
     if (reminderTime <= now && !reminder.triggered) {
-      console.log('[SW] ПОКАЗЫВАЕМ НАПОМИНАНИЕ:', reminder.title);
-      
       self.registration.showNotification(
         `🔔 ${reminder.title}`,
         {
@@ -79,11 +70,65 @@ function checkReminders() {
       );
       
       reminder.triggered = true;
+      
+      if (reminder.repeat && reminder.repeat !== 'none') {
+        scheduleNextRepeat(reminder);
+      }
     }
   });
 }
 
-// Простой fetch для кэширования
+function scheduleNextRepeat(reminder) {
+  const currentDate = new Date(reminder.datetime);
+  let nextDate = new Date(currentDate);
+  
+  switch(reminder.repeat) {
+    case 'daily': nextDate.setDate(nextDate.getDate() + 1); break;
+    case 'weekly': nextDate.setDate(nextDate.getDate() + 7); break;
+    case 'monthly': nextDate.setMonth(nextDate.getMonth() + 1); break;
+    case 'yearly': nextDate.setFullYear(nextDate.getFullYear() + 1); break;
+    default: return;
+  }
+  
+  reminders.push({
+    eventId: reminder.eventId + '_' + Date.now(),
+    title: reminder.title,
+    datetime: nextDate.toISOString(),
+    repeat: reminder.repeat,
+    triggered: false
+  });
+  
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'SCHEDULE_NEXT_REMINDER',
+        eventId: reminder.eventId,
+        nextDatetime: nextDate.toISOString(),
+        repeat: reminder.repeat
+      });
+    });
+  });
+}
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const data = event.notification.data;
+  
+  if (event.action === 'open' && data) {
+    event.waitUntil(
+      clients.matchAll({ type: 'window' }).then(clientList => {
+        for (const client of clientList) {
+          if (client.url.includes('/events-diary/') && 'focus' in client) {
+            client.postMessage({ type: 'OPEN_EVENT', eventId: data.eventId });
+            return client.focus();
+          }
+        }
+        return clients.openWindow(`/events-diary/?event=${data.eventId}`);
+      })
+    );
+  }
+});
+
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
