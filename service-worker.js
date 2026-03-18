@@ -1,5 +1,5 @@
-// service-worker.js - v2.1.0 с работающими напоминаниями
-const CACHE_NAME = 'events-diary-v2.1.0';
+// service-worker.js - v2.2.0 с проверкой каждую минуту
+const CACHE_NAME = 'events-diary-v2.2.0';
 const CACHE_PREFIX = 'events-diary';
 
 const INITIAL_CACHE = [
@@ -12,8 +12,8 @@ const INITIAL_CACHE = [
   '/events-diary/maskable_icon_x512.png'
 ];
 
-// Хранилище активных таймеров
-const reminderTimers = new Map();
+// Хранилище напоминаний
+let reminders = [];
 
 self.addEventListener('install', event => {
   console.log('[SW] Установка версии:', CACHE_NAME);
@@ -49,7 +49,11 @@ self.addEventListener('activate', event => {
         );
       }),
       self.clients.claim()
-    ])
+    ]).then(() => {
+      // Запускаем проверку напоминаний каждую минуту
+      setInterval(checkReminders, 60000);
+      checkReminders(); // сразу проверим
+    })
   );
 });
 
@@ -58,27 +62,33 @@ self.addEventListener('activate', event => {
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SCHEDULE_REMINDER') {
     const { eventId, title, datetime, repeat } = event.data;
-    scheduleReminder(eventId, title, datetime, repeat);
+    addReminder(eventId, title, datetime, repeat);
+    console.log('[SW] Добавлено напоминание:', eventId, datetime);
   }
   
   if (event.data && event.data.type === 'CANCEL_REMINDER') {
     const { eventId } = event.data;
-    cancelReminder(eventId);
+    removeReminder(eventId);
+    console.log('[SW] Удалено напоминание:', eventId);
+  }
+  
+  if (event.data && event.data.type === 'LOAD_REMINDERS') {
+    const { reminders: loadedReminders } = event.data;
+    reminders = loadedReminders;
+    console.log('[SW] Загружено напоминаний:', reminders.length);
   }
   
   if (event.data && event.data.type === 'TEST_NOTIFICATION') {
-    const { sound } = event.data;
-    testNotification(sound);
+    testNotification();
   }
 });
 
-function testNotification(sound) {
+function testNotification() {
   self.registration.showNotification('🔔 Тестовое уведомление', {
     body: 'Если вы это видите, уведомления работают!',
     icon: '/events-diary/maskable_icon_x192.png',
     badge: '/events-diary/maskable_icon_x72.png',
-    silent: sound === 'silent',
-    tag: 'test-notification',
+    tag: 'test-' + Date.now(),
     requireInteraction: true,
     actions: [
       { action: 'close', title: 'Закрыть' }
@@ -86,72 +96,82 @@ function testNotification(sound) {
   });
 }
 
-function scheduleReminder(eventId, title, datetime, repeat) {
-  // Отменяем предыдущий таймер для этого события
-  cancelReminder(eventId);
+function addReminder(eventId, title, datetime, repeat) {
+  // Удаляем старое напоминание с таким же ID
+  reminders = reminders.filter(r => r.eventId !== eventId);
   
-  const reminderTime = new Date(datetime).getTime();
-  const now = Date.now();
-  const delay = reminderTime - now;
-  
-  console.log(`[SW] Планируем напоминание для ${eventId} через ${Math.round(delay/1000)} сек`);
-  
-  if (delay <= 0) {
-    console.log('[SW] Время уже прошло, показываем сразу');
-    showReminderNotification(eventId, title, datetime, repeat);
-    return;
-  }
-  
-  // Устанавливаем таймер
-  const timerId = setTimeout(() => {
-    showReminderNotification(eventId, title, datetime, repeat);
-    reminderTimers.delete(eventId);
-  }, delay);
-  
-  reminderTimers.set(eventId, timerId);
-}
-
-function showReminderNotification(eventId, title, datetime, repeat) {
-  const formattedTime = new Date(datetime).toLocaleString('ru-RU', {
-    hour: '2-digit',
-    minute: '2-digit',
-    day: '2-digit',
-    month: '2-digit'
+  reminders.push({
+    eventId,
+    title,
+    datetime,
+    repeat,
+    triggered: false
   });
   
-  self.registration.showNotification(
-    `🔔 Напоминание: ${title}`,
-    {
-      body: `Мероприятие запланировано на ${formattedTime}`,
-      icon: '/events-diary/maskable_icon_x192.png',
-      badge: '/events-diary/maskable_icon_x72.png',
-      tag: `reminder-${eventId}`,
-      renotify: true,
-      requireInteraction: true,
-      data: {
-        eventId: eventId,
-        datetime: datetime,
-        repeat: repeat
-      },
-      actions: [
-        { action: 'open', title: '📋 Открыть' },
-        { action: 'snooze15', title: '⏰ +15 мин' },
-        { action: 'snooze60', title: '⏰ +1 час' },
-        { action: 'complete', title: '✅ Выполнено' }
-      ]
-    }
-  );
-  
-  // Планируем следующее повторение, если нужно
-  if (repeat !== 'none') {
-    scheduleNextRepeat(eventId, title, new Date(datetime), repeat);
-  }
+  console.log('[SW] Текущие напоминания:', reminders);
 }
 
-function scheduleNextRepeat(eventId, title, lastDate, repeat) {
-  let nextDate = new Date(lastDate);
+function removeReminder(eventId) {
+  reminders = reminders.filter(r => r.eventId !== eventId);
+}
+
+function checkReminders() {
+  const now = Date.now();
+  console.log('[SW] Проверка напоминаний...', new Date().toLocaleTimeString());
   
-  switch(repeat) {
+  reminders.forEach(reminder => {
+    const reminderTime = new Date(reminder.datetime).getTime();
+    
+    // Проверяем, что время наступило (с погрешностью в 1 минуту)
+    if (reminderTime <= now && !reminder.triggered) {
+      console.log('[SW] ПОРА! Показываем напоминание:', reminder.eventId);
+      
+      // Показываем уведомление
+      self.registration.showNotification(
+        `🔔 Напоминание: ${reminder.title}`,
+        {
+          body: `Мероприятие запланировано на ${new Date(reminder.datetime).toLocaleString('ru-RU')}`,
+          icon: '/events-diary/maskable_icon_x192.png',
+          badge: '/events-diary/maskable_icon_x72.png',
+          tag: `reminder-${reminder.eventId}`,
+          renotify: true,
+          requireInteraction: true,
+          data: {
+            eventId: reminder.eventId,
+            datetime: reminder.datetime,
+            repeat: reminder.repeat
+          },
+          actions: [
+            { action: 'open', title: '📋 Открыть' },
+            { action: 'snooze15', title: '⏰ +15 мин' },
+            { action: 'snooze60', title: '⏰ +1 час' },
+            { action: 'complete', title: '✅ Выполнено' }
+          ]
+        }
+      );
+      
+      reminder.triggered = true;
+      
+      // Если напоминание повторяющееся, планируем следующее
+      if (reminder.repeat && reminder.repeat !== 'none') {
+        scheduleNextRepeat(reminder);
+      }
+    }
+  });
+  
+  // Очищаем старые (более суток) напоминания
+  const oneDayAgo = now - 24 * 60 * 60 * 1000;
+  reminders = reminders.filter(r => {
+    const reminderTime = new Date(r.datetime).getTime();
+    return reminderTime > oneDayAgo || r.repeat !== 'none';
+  });
+}
+
+function scheduleNextRepeat(reminder) {
+  const currentDate = new Date(reminder.datetime);
+  let nextDate = new Date(currentDate);
+  
+  switch(reminder.repeat) {
     case 'daily':
       nextDate.setDate(nextDate.getDate() + 1);
       break;
@@ -168,34 +188,24 @@ function scheduleNextRepeat(eventId, title, lastDate, repeat) {
       return;
   }
   
-  // Сообщаем клиенту о следующем напоминании
+  // Добавляем следующее напоминание
+  reminders.push({
+    eventId: reminder.eventId + '_' + Date.now(),
+    title: reminder.title,
+    datetime: nextDate.toISOString(),
+    repeat: reminder.repeat,
+    triggered: false
+  });
+  
+  // Сообщаем клиенту, чтобы обновил данные
   self.clients.matchAll().then(clients => {
     clients.forEach(client => {
       client.postMessage({
-        type: 'SCHEDULE_NEXT_REMINDER',
-        eventId: eventId,
-        nextDatetime: nextDate.toISOString(),
-        repeat: repeat
+        type: 'REMINDER_TRIGGERED',
+        eventId: reminder.eventId
       });
     });
   });
-  
-  // Планируем следующее
-  scheduleReminder(eventId, title, nextDate.toISOString(), repeat);
-}
-
-function cancelReminder(eventId) {
-  if (reminderTimers.has(eventId)) {
-    clearTimeout(reminderTimers.get(eventId));
-    reminderTimers.delete(eventId);
-    console.log(`[SW] Отменено напоминание для ${eventId}`);
-  }
-  
-  // Закрываем все непоказанные уведомления
-  self.registration.getNotifications({ tag: `reminder-${eventId}` })
-    .then(notifications => {
-      notifications.forEach(notification => notification.close());
-    });
 }
 
 self.addEventListener('notificationclick', event => {
@@ -210,7 +220,6 @@ self.addEventListener('notificationclick', event => {
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true })
         .then(clientList => {
-          // Ищем уже открытое окно с приложением
           for (const client of clientList) {
             if (client.url.includes('/events-diary/') && 'focus' in client) {
               client.postMessage({
@@ -220,15 +229,22 @@ self.addEventListener('notificationclick', event => {
               return client.focus();
             }
           }
-          // Если нет открытого окна, открываем новое
           return clients.openWindow(`/events-diary/?event=${data.eventId}`);
         })
     );
   }
   
   if (action === 'snooze15') {
-    const newTime = new Date(data.datetime);
+    const newTime = new Date();
     newTime.setMinutes(newTime.getMinutes() + 15);
+    
+    // Добавляем новое напоминание
+    addReminder(
+      data.eventId + '_snooze',
+      data.title || 'Мероприятие',
+      newTime.toISOString(),
+      'none'
+    );
     
     event.waitUntil(
       clients.matchAll().then(clients => {
@@ -244,8 +260,15 @@ self.addEventListener('notificationclick', event => {
   }
   
   if (action === 'snooze60') {
-    const newTime = new Date(data.datetime);
+    const newTime = new Date();
     newTime.setHours(newTime.getHours() + 1);
+    
+    addReminder(
+      data.eventId + '_snooze',
+      data.title || 'Мероприятие',
+      newTime.toISOString(),
+      'none'
+    );
     
     event.waitUntil(
       clients.matchAll().then(clients => {
@@ -273,6 +296,8 @@ self.addEventListener('notificationclick', event => {
     );
   }
 });
+
+// ==================== КЭШИРОВАНИЕ ====================
 
 self.addEventListener('fetch', event => {
   const { request } = event;
