@@ -308,7 +308,7 @@
             margin-bottom: 10px;
             padding-bottom: 8px;
             border-bottom: 1px solid var(--border-color);
-            padding-right: 100px;
+            padding-right: 140px;
         }
         
         .event-title-row {
@@ -544,7 +544,7 @@
         .event-reminder-info {
             margin-top: 10px;
             padding: 8px 12px;
-            background: rgba(var(--color-reminder-rgb, 251, 191, 36), 0.15);
+            background: rgba(251, 191, 36, 0.15);
             border-radius: 8px;
             border-left: 4px solid var(--color-reminder);
             color: var(--text-primary);
@@ -573,7 +573,7 @@
         .event-notes {
             margin-top: 12px;
             padding: 8px 12px;
-            background: rgba(var(--color-primary-rgb, 157, 78, 221), 0.15);
+            background: rgba(157, 78, 221, 0.15);
             border-radius: 8px;
             border-left: 4px solid var(--color-primary);
             color: var(--text-primary);
@@ -1229,19 +1229,19 @@
             transition: all 0.2s;
             border: 1px solid transparent;
             font-size: 0.8rem;
-            background: rgba(var(--color-danger-rgb, 220, 53, 69), 0.2);
+            background: rgba(220, 53, 69, 0.2);
             color: var(--color-danger);
-            border-color: rgba(var(--color-danger-rgb, 220, 53, 69), 0.4);
+            border-color: rgba(220, 53, 69, 0.4);
             flex-shrink: 0;
         }
         
         .btn-remove-task:hover {
-            background: rgba(var(--color-danger-rgb, 220, 53, 69), 0.4);
+            background: rgba(220, 53, 69, 0.4);
             transform: translateY(-1px);
         }
         
         .btn-add-task {
-            background: rgba(var(--color-success-rgb, 72, 187, 120), 0.2);
+            background: rgba(72, 187, 120, 0.2);
             color: var(--color-success);
             border: 1px solid var(--color-success);
             border-radius: 10px;
@@ -1257,7 +1257,7 @@
         }
         
         .btn-add-task:hover {
-            background: rgba(var(--color-success-rgb, 72, 187, 120), 0.4);
+            background: rgba(72, 187, 120, 0.4);
             transform: translateY(-2px);
         }
         
@@ -1389,7 +1389,7 @@
             width: 100%;
             padding: 15px;
             margin-top: 15px;
-            background: rgba(var(--color-success-rgb, 72, 187, 120), 0.1);
+            background: rgba(72, 187, 120, 0.1);
             border: 2px dashed var(--color-success);
             border-radius: 10px;
             color: var(--color-success);
@@ -1399,7 +1399,7 @@
         }
         
         .btn-add-category:hover {
-            background: rgba(var(--color-success-rgb, 72, 187, 120), 0.2);
+            background: rgba(72, 187, 120, 0.2);
             transform: translateY(-2px);
         }
         
@@ -1630,7 +1630,7 @@
         }
         
         .nav-item.active {
-            background: rgba(var(--color-primary-rgb, 157, 78, 221), 0.25);
+            background: rgba(157, 78, 221, 0.25);
             color: var(--text-inverse);
         }
         
@@ -1777,7 +1777,7 @@
             }
             
             .event-header {
-                padding-right: 90px;
+                padding-right: 130px;
             }
             
             .theme-selector-card {
@@ -1846,7 +1846,7 @@
     </style>
 </head>
 <body class="theme-dark">
-    <!-- ШАПКА (без бейджа) -->
+    <!-- ШАПКА -->
     <header class="app-header">
         <div class="header-titles">
             <h1 id="pageTitle">Мой Дневник Мероприятий</h1>
@@ -1952,7 +1952,7 @@
                 </form>
             </div>
 
-            <!-- НОВЫЙ БЛОК: НАСТРОЙКИ НАПОМИНАНИЙ -->
+            <!-- НАСТРОЙКИ НАПОМИНАНИЙ -->
             <div class="profile-card">
                 <h2><i class="fas fa-bell"></i> Напоминания</h2>
                 
@@ -1985,13 +1985,6 @@
                         <option value="chime">Мелодия</option>
                         <option value="silent">Без звука</option>
                     </select>
-                </div>
-                
-                <div class="settings-group">
-                    <label>
-                        <span>Время по умолчанию для напоминаний:</span>
-                        <input type="time" id="defaultReminderTime" value="09:00">
-                    </label>
                 </div>
                 
                 <button class="btn-submit" id="testNotificationBtn" style="margin-top: 10px; width: 100%;">
@@ -2084,7 +2077,7 @@
                     <h3><i class="fas fa-bell"></i> Напоминание (необязательно)</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="eventReminderEnabled">
+                            <label>
                                 <input type="checkbox" id="eventReminderEnabled"> Установить напоминание
                             </label>
                         </div>
@@ -2129,7 +2122,7 @@
         </div>
     </div>
 
-    <!-- НИЖНЕЕ МЕНЮ (BOTTOM SHEET) ДЛЯ БЫСТРЫХ НАПОМИНАНИЙ -->
+    <!-- НИЖНЕЕ МЕНЮ ДЛЯ БЫСТРЫХ НАПОМИНАНИЙ -->
     <div class="bottom-sheet" id="reminderBottomSheet">
         <div class="bottom-sheet-header">
             <h3><i class="fas fa-bell"></i> Напомнить о мероприятии</h3>
@@ -2179,7 +2172,7 @@
                 </button>
             </div>
             
-            <!-- Кастомный блок (скрыт по умолчанию) -->
+            <!-- Кастомный блок -->
             <div class="reminder-custom hidden" id="customReminderBlock">
                 <div class="reminder-datetime">
                     <input type="date" id="customReminderDate">
@@ -2211,7 +2204,7 @@
             </div>
             
             <div id="importSummary" style="display: none;">
-                <div style="background: rgba(var(--color-accent-rgb, 255, 209, 102), 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <div style="background: rgba(255, 209, 102, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
                     <h3 style="color: var(--color-accent); margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Обнаружены данные:</h3>
                     <div id="importStats" style="color: var(--text-muted);"></div>
                 </div>
@@ -2286,14 +2279,98 @@
         let currentArchiveFilterCategory = 'all';
         let searchTimeout = null;
         let currentCalendarDate = new Date();
-        let currentEventForReminder = null; // для нижнего меню
+        let currentEventForReminder = null;
         let reminderSettings = {
             enabled: true,
             defaultMorning: '09:00',
             defaultEvening: '19:00',
-            defaultReminderTime: '09:00',
             sound: 'default'
         };
+        
+        // ==================== ИНИЦИАЛИЗАЦИЯ SERVICE WORKER ====================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('SW зарегистрирован:', reg.scope))
+                    .catch(err => console.log('SW ошибка:', err));
+            });
+            
+            // Слушаем сообщения от Service Worker
+            navigator.serviceWorker.addEventListener('message', event => {
+                const { type, eventId, nextDatetime, repeat } = event.data;
+                
+                if (type === 'SCHEDULE_NEXT_REMINDER') {
+                    const events = loadEvents();
+                    const event = events.find(e => e.id === eventId);
+                    if (event && event.reminder) {
+                        event.reminder.datetime = nextDatetime;
+                        saveEvents(events);
+                    }
+                }
+                
+                if (type === 'OPEN_EVENT') {
+                    const events = loadEvents();
+                    const event = events.find(e => e.id === eventId);
+                    if (event) {
+                        document.querySelector('[data-target="eventsSection"]').click();
+                        setTimeout(() => openEditEventForm(event, false), 300);
+                    }
+                }
+                
+                if (type === 'SNOOZE_REMINDER') {
+                    const { eventId, newDatetime } = event.data;
+                    const events = loadEvents();
+                    const event = events.find(e => e.id === eventId);
+                    if (event && event.reminder) {
+                        event.reminder.datetime = newDatetime;
+                        event.reminder.snoozed = true;
+                        saveEvents(events);
+                        scheduleReminderWithSW(eventId, event.title, newDatetime, event.reminder.repeat);
+                        showNotification('Напоминание отложено');
+                    }
+                }
+                
+                if (type === 'COMPLETE_EVENT') {
+                    const events = loadEvents();
+                    const event = events.find(e => e.id === eventId);
+                    if (event) {
+                        event.tasks.forEach(task => {
+                            task.completed = true;
+                            if (task.subtasks) {
+                                task.subtasks.forEach(sub => sub.completed = true);
+                            }
+                        });
+                        saveEvents(events);
+                        processEventCompletion(eventId);
+                    }
+                }
+            });
+        }
+        
+        function scheduleReminderWithSW(eventId, title, datetime, repeat) {
+            if (!('serviceWorker' in navigator)) return;
+            
+            navigator.serviceWorker.ready.then(registration => {
+                registration.active.postMessage({
+                    type: 'SCHEDULE_REMINDER',
+                    eventId: eventId,
+                    title: title,
+                    datetime: datetime,
+                    repeat: repeat
+                });
+            });
+        }
+        
+        function cancelReminderWithSW(eventId) {
+            if (!('serviceWorker' in navigator)) return;
+            
+            navigator.serviceWorker.ready.then(registration => {
+                registration.active.postMessage({
+                    type: 'CANCEL_REMINDER',
+                    eventId: eventId
+                });
+            });
+        }
         
         // ==================== ИНИЦИАЛИЗАЦИЯ УВЕДОМЛЕНИЙ ====================
         async function initNotifications() {
@@ -2321,27 +2398,10 @@
                 silent: reminderSettings.sound === 'silent'
             };
             
-            const notification = new Notification(title, { ...defaultOptions, ...options });
-            
-            notification.onclick = function() {
-                window.focus();
-                if (options.data && options.data.eventId) {
-                    const event = findEventById(options.data.eventId);
-                    if (event) {
-                        openEditEventForm(event, false);
-                    }
-                }
-            };
-            
-            return notification;
+            return new Notification(title, { ...defaultOptions, ...options });
         }
         
-        function findEventById(eventId) {
-            const events = loadEvents();
-            return events.find(e => e.id === eventId);
-        }
-        
-        // ==================== ЗАГРУЗКА НАСТРОЕК НАПОМИНАНИЙ ====================
+        // ==================== ЗАГРУЗКА НАСТРОЕК ====================
         function loadReminderSettings() {
             try {
                 const saved = localStorage.getItem(STORAGE_KEYS.REMINDER_SETTINGS);
@@ -2352,14 +2412,11 @@
                 console.error('Ошибка загрузки настроек:', error);
             }
             
-            // Обновляем UI
             document.getElementById('notificationsEnabled').checked = reminderSettings.enabled;
             document.getElementById('defaultMorningTime').value = reminderSettings.defaultMorning;
             document.getElementById('defaultEveningTime').value = reminderSettings.defaultEvening;
-            document.getElementById('defaultReminderTime').value = reminderSettings.defaultReminderTime;
             document.getElementById('notificationSound').value = reminderSettings.sound;
             
-            // Обновляем отображаемое время в нижнем меню
             updateReminderPresetTimes();
         }
         
@@ -2367,7 +2424,6 @@
             reminderSettings.enabled = document.getElementById('notificationsEnabled').checked;
             reminderSettings.defaultMorning = document.getElementById('defaultMorningTime').value;
             reminderSettings.defaultEvening = document.getElementById('defaultEveningTime').value;
-            reminderSettings.defaultReminderTime = document.getElementById('defaultReminderTime').value;
             reminderSettings.sound = document.getElementById('notificationSound').value;
             
             localStorage.setItem(STORAGE_KEYS.REMINDER_SETTINGS, JSON.stringify(reminderSettings));
@@ -2382,13 +2438,12 @@
             document.getElementById('tomorrowMorningTime').textContent = morningTime;
             document.getElementById('tomorrowEveningTime').textContent = eveningTime;
             
-            // Рассчитываем время для "на этой неделе" (пятница)
             const today = new Date();
-            const dayOfWeek = today.getDay(); // 0 = ВС, 1 = ПН, ... 6 = СБ
+            const dayOfWeek = today.getDay();
             let daysUntilFriday;
-            if (dayOfWeek <= 5) { // ПН-ПТ
+            if (dayOfWeek <= 5) {
                 daysUntilFriday = 5 - dayOfWeek;
-            } else { // СБ-ВС
+            } else {
                 daysUntilFriday = (5 + 7) - dayOfWeek;
             }
             const friday = new Date(today);
@@ -2396,9 +2451,8 @@
             const fridayStr = getDayName(friday.getDay()) + ', ' + eveningTime;
             document.getElementById('thisWeekTime').textContent = fridayStr;
             
-            // "На следующей неделе" (понедельник)
+            const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
             const nextMonday = new Date(today);
-            const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek; // если ВС, то завтра ПН
             nextMonday.setDate(today.getDate() + daysUntilMonday);
             const mondayStr = getDayName(nextMonday.getDay()) + ', ' + morningTime;
             document.getElementById('nextWeekTime').textContent = mondayStr;
@@ -2438,7 +2492,6 @@
             });
         }
         
-        // ==================== УВЕДОМЛЕНИЯ (ВНУТРЕННИЕ) ====================
         function showNotification(message, isSuccess = true) {
             const notif = document.getElementById('notification');
             notif.textContent = message;
@@ -2724,7 +2777,6 @@
                 localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(events));
                 updateBadges();
                 updateStatistics();
-                scheduleAllReminders(); // Перепланируем напоминания
             } catch (error) {
                 console.error('Ошибка сохранения:', error);
                 showNotification('Ошибка сохранения', false);
@@ -2756,11 +2808,9 @@
             
             const allTasksCompleted = event.tasks.every(task => {
                 if (!task.completed) return false;
-                
                 if (task.subtasks && task.subtasks.length > 0) {
                     return task.subtasks.every(sub => sub.completed);
                 }
-                
                 return true;
             });
             
@@ -2847,6 +2897,7 @@
                 renderEventsList(document.getElementById('searchInput').value.toLowerCase());
                 renderCalendar();
                 showNotification('Мероприятие удалено');
+                cancelReminderWithSW(eventId);
             }
         }
         
@@ -2897,7 +2948,6 @@
             const archiveBadge = document.getElementById('navArchiveBadge');
             const archiveCountSpan = document.getElementById('archiveCount');
             
-            // Бейдж на иконке списка (активные)
             if (activeCount > 0) {
                 activeBadge.textContent = activeCount;
                 activeBadge.style.display = 'block';
@@ -2905,7 +2955,6 @@
                 activeBadge.style.display = 'none';
             }
             
-            // Бейдж на иконке архива
             if (archiveCount > 0) {
                 archiveBadge.textContent = archiveCount;
                 archiveBadge.style.display = 'block';
@@ -2953,7 +3002,6 @@
             });
         }
         
-        // ==================== ФИЛЬТРАЦИЯ ====================
         function filterEventsByCategory(events, categoryId) {
             if (categoryId === 'all') return events;
             return events.filter(event => event.categoryId === categoryId);
@@ -3096,7 +3144,6 @@
                 });
             }
             
-            // Информация о напоминании
             let reminderHtml = '';
             if (event.reminder && event.reminder.enabled && !isArchived) {
                 const reminderDate = new Date(event.reminder.datetime);
@@ -3253,8 +3300,11 @@
             event.reminder = reminderData;
             saveEvents(events);
             
+            scheduleReminderWithSW(eventId, event.title, reminderData.datetime, reminderData.repeat);
+            
             showNotification('Напоминание установлено');
             renderEventsList(document.getElementById('searchInput').value.toLowerCase());
+            closeReminderSheet();
         }
         
         function removeReminder(eventId) {
@@ -3264,6 +3314,8 @@
             
             delete event.reminder;
             saveEvents(events);
+            
+            cancelReminderWithSW(eventId);
             
             showNotification('Напоминание удалено');
             renderEventsList(document.getElementById('searchInput').value.toLowerCase());
@@ -3284,14 +3336,10 @@
             
             saveEvents(events);
             
+            scheduleReminderWithSW(eventId, event.title, newTime.toISOString(), event.reminder.repeat);
+            
             showNotification(`Напоминание отложено на ${minutes} минут`);
             renderEventsList(document.getElementById('searchInput').value.toLowerCase());
-        }
-        
-        function scheduleAllReminders() {
-            // Здесь можно реализовать планирование через Service Worker
-            // Для простоты пока оставим заглушку
-            console.log('Напоминания запланированы');
         }
         
         // ==================== ОПЕРАЦИИ С ЗАДАЧАМИ ====================
@@ -3308,6 +3356,7 @@
                     if (processEventCompletion(eventId)) {
                         renderEventsList(document.getElementById('searchInput').value.toLowerCase());
                         renderArchiveList();
+                        cancelReminderWithSW(eventId);
                     } else {
                         renderEventsList(document.getElementById('searchInput').value.toLowerCase());
                     }
@@ -3332,6 +3381,7 @@
                         if (processEventCompletion(eventId)) {
                             renderEventsList(document.getElementById('searchInput').value.toLowerCase());
                             renderArchiveList();
+                            cancelReminderWithSW(eventId);
                         } else {
                             renderEventsList(document.getElementById('searchInput').value.toLowerCase());
                         }
@@ -3342,7 +3392,6 @@
             }
         }
         
-        // ==================== ОПЕРАЦИИ С МЕРОПРИЯТИЯМИ ====================
         function editEvent(eventId) {
             const events = loadEvents();
             const event = events.find(e => e.id === eventId);
@@ -3770,6 +3819,11 @@
             }
             
             if (isEditMode) {
+                const oldEvent = events.find(e => e.id === eventId);
+                if (oldEvent && oldEvent.reminder) {
+                    cancelReminderWithSW(eventId);
+                }
+                
                 const index = events.findIndex(e => e.id === eventId);
                 if (index !== -1) {
                     events[index] = newEvent;
@@ -3779,6 +3833,11 @@
             }
             
             saveEvents(events);
+            
+            if (newEvent.reminder) {
+                scheduleReminderWithSW(newEvent.id, newEvent.title, newEvent.reminder.datetime, newEvent.reminder.repeat);
+            }
+            
             renderEventsList(document.getElementById('searchInput').value.toLowerCase());
             renderCalendar();
             closeForm();
@@ -3935,6 +3994,11 @@
                     }
                     if (importedData.events) {
                         saveEvents(importedData.events);
+                        importedData.events.forEach(event => {
+                            if (event.reminder) {
+                                scheduleReminderWithSW(event.id, event.title, event.reminder.datetime, event.reminder.repeat);
+                            }
+                        });
                     }
                     if (importedData.archive) {
                         saveArchive(importedData.archive);
@@ -3955,6 +4019,9 @@
                     newEvents.forEach(newEvent => {
                         if (!mergedEvents.some(e => e.id === newEvent.id)) {
                             mergedEvents.push(newEvent);
+                            if (newEvent.reminder) {
+                                scheduleReminderWithSW(newEvent.id, newEvent.title, newEvent.reminder.datetime, newEvent.reminder.repeat);
+                            }
                         }
                     });
                     saveEvents(mergedEvents);
@@ -4065,7 +4132,6 @@
                 if (e.target === this) closeReminderSheet();
             });
             
-            // Быстрые варианты
             document.querySelectorAll('.reminder-option[data-preset]').forEach(option => {
                 option.addEventListener('click', function() {
                     if (!currentEventForReminder) return;
@@ -4121,11 +4187,9 @@
                 });
             });
             
-            // Кастомный выбор
             document.getElementById('customReminderOption').addEventListener('click', () => {
                 document.getElementById('customReminderBlock').classList.remove('hidden');
                 
-                // Устанавливаем сегодняшнюю дату и время по умолчанию
                 const now = new Date();
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -4251,14 +4315,11 @@
             document.getElementById('addCategoryBtn').addEventListener('click', addNewCategory);
             document.getElementById('clearArchiveBtn').addEventListener('click', clearArchive);
             
-            // Сохранение настроек напоминаний
             document.getElementById('notificationsEnabled').addEventListener('change', saveReminderSettings);
             document.getElementById('defaultMorningTime').addEventListener('change', saveReminderSettings);
             document.getElementById('defaultEveningTime').addEventListener('change', saveReminderSettings);
-            document.getElementById('defaultReminderTime').addEventListener('change', saveReminderSettings);
             document.getElementById('notificationSound').addEventListener('change', saveReminderSettings);
             
-            // Тестовое уведомление
             document.getElementById('testNotificationBtn').addEventListener('click', () => {
                 showBrowserNotification('🔔 Тестовое уведомление', {
                     body: 'Если вы это видите, уведомления работают!'
@@ -4267,7 +4328,6 @@
             
             initExportImport();
             
-            // Демо-данные при первом запуске
             const events = loadEvents();
             const archive = loadArchive();
             if (events.length === 0 && archive.length === 0) {
